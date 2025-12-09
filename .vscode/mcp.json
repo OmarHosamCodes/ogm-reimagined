@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"supabase": {
+			"type": "http",
+			"url": "https://kong-production-090e.up.railway.app/mcp"
+		}
+	},
+	"inputs": []
+}

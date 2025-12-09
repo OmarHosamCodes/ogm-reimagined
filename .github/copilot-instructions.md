@@ -1,17 +1,17 @@
-# AI Coding Agent Instructions for create-t3-turbo
+# AI Coding Agent Instructions
 
 ## Monorepo Architecture
 
 This is a **Turborepo-based monorepo** with three distinct app layers and shared backend packages:
 
 - **Apps** (`apps/nextjs`, `apps/expo`, `apps/tanstack-start`): Front-end applications consuming shared APIs
-- **Packages** (`@acme/*`): Shared business logic and utilities
-  - `@acme/api`: tRPC v11 router (defines all backend endpoints)
-  - `@acme/auth`: Better Auth integration (handles authentication across all apps)
-  - `@acme/db`: Drizzle ORM + Supabase schema definitions
-  - `@acme/ui`: shadcn-ui component library with Tailwind v4
-  - `@acme/validators`: Zod schema validation
-- **Tooling** (`tooling/`): Shared ESLint, Prettier, Tailwind, TypeScript configs
+- **Packages** (`@ogm/*`): Shared business logic and utilities
+  - `@ogm/api`: tRPC v11 router (defines all backend endpoints)
+  - `@ogm/auth`: Better Auth integration (handles authentication across all apps)
+  - `@ogm/db`: Drizzle ORM + Supabase (Vercel Postgres) schema definitions
+  - `@ogm/ui`: shadcn-ui component library with Tailwind v4
+  - `@ogm/validators`: Zod v4 schema validation
+- **Tooling** (`tooling/`): Shared Biome (linting/formatting), Tailwind, TypeScript configs
 
 ## Critical Build & Dev Commands
 
@@ -19,16 +19,21 @@ Use **Turbo** for all workspace operations (not individual `pnpm` in subdirector
 
 ```bash
 pnpm dev                 # Start all apps with watch mode (same session)
-pnpm dev:next          # Start only Next.js app + dependencies
-pnpm build             # Build all packages and apps (respects dependency graph)
-pnpm lint              # Lint all packages (depends on ^topo then ^build)
-pnpm typecheck         # Type-check all packages
-pnpm db:push           # Push Drizzle schema to Supabase
-pnpm db:studio         # Open Drizzle Studio
-pnpm format:fix        # Auto-format all files with Prettier
+pnpm dev:next            # Start only Next.js app + dependencies
+pnpm build               # Build all packages and apps (respects dependency graph)
+pnpm check               # Lint all packages with Biome (depends on ^topo then ^build)
+pnpm format              # Format all files with Biome
+pnpm typecheck           # Type-check all packages
+pnpm auth:generate       # Generate Better Auth schema (must run before db:push)
+pnpm db:push             # Push Drizzle schema to Postgres
+pnpm db:studio           # Open Drizzle Studio
+pnpm ui-add              # Add shadcn-ui components interactively
 ```
 
-**Key point**: `turbo run` respects task dependencies defined in `turbo.json`. Never skip to `pnpm` in subdirectories—Turbo's task graph handles parallelization and caching.
+**Key points**:
+- `turbo run` respects task dependencies defined in `turbo.json`. Never skip to `pnpm` in subdirectories—Turbo's task graph handles parallelization and caching.
+- **Always run `pnpm auth:generate` before `pnpm db:push`** to ensure Better Auth tables are included in the schema.
+- Uses **Biome** (not ESLint/Prettier) for linting and formatting—see `biome.json` at root.
 
 ## Data Flow & Type Safety
 
@@ -36,7 +41,7 @@ pnpm format:fix        # Auto-format all files with Prettier
 
 All API communication is **type-safe through tRPC**:
 
-1. **Server definition** (`packages/api/src/router/`): Define routers with Zod validation
+1. **Server definition** (`packages/api/src/router/`): Define routers with Zod v4 validation
    ```typescript
    export const postRouter = createTRPCRouter({
      all: publicProcedure.query(async ({ ctx }) => db.query.Post.findMany()),
@@ -47,13 +52,14 @@ All API communication is **type-safe through tRPC**:
 3. **Client consumption**:
    - **RSC** (Next.js `server.tsx`): `const trpc = createTRPCOptionsProxy<AppRouter>`—calls routers directly with server context
    - **Client** (Next.js `react.tsx`, Expo): HTTP batch stream link via `httpBatchStreamLink` to API routes
+   - **TanStack Start** (`lib/trpc.ts`): Similar HTTP batch stream setup for client-side queries
 
 ### Database Schema
 
-- **Drizzle ORM** defines schema in `packages/db/src/schema.ts` (uses `drizzle-zod` for automatic Zod schemas)
-- **Better Auth** auto-generates auth tables via `packages/db/src/auth-schema.ts`
-- **Edge-bound**: Uses Vercel Postgres driver (``:6543`` connection pooling)
-- Push changes: `pnpm db:push` (uses `packages/db/drizzle.config.ts`)
+- **Drizzle ORM** defines schema in `packages/db/src/schema.ts` (uses `drizzle-zod` for automatic Zod v4 schemas)
+- **Better Auth** auto-generates auth tables via `packages/db/src/auth-schema.ts` (run `pnpm auth:generate` to regenerate)
+- **Edge-bound**: Uses Vercel Postgres driver (`:6543` connection pooling for edge, `:5432` for migrations)
+- Push changes: `pnpm db:push` (uses `packages/db/drizzle.config.ts`, automatically switches to non-pooling URL)
 
 ## Authentication Architecture
 
@@ -67,29 +73,39 @@ All API communication is **type-safe through tRPC**:
 ## Environment & Validation
 
 - **Strict env access**: All environment variables validated through `env.ts` files in each app
-- ESLint rule `restrictEnvAccess` forbids direct `process.env` access—must import from `~/env`
-- Pattern: `export const env = createEnv({ ... })` with Zod validation in each app
+- Pattern: `export const env = createEnv({ ... })` with Zod v4 validation in each app (from `@t3-oss/env-nextjs` or `@t3-oss/env-core`)
+- Apps extend shared environment schemas (e.g., Next.js extends `authEnv()` from `@ogm/auth/env`)
+- Must import from `~/env`—direct `process.env` access forbidden except in `env.ts` files
 
 ## Package Patterns & Imports
 
-### UI Components (`@acme/ui`)
+### UI Components (`@ogm/ui`)
 
 - Built with shadcn-ui + Tailwind v4
 - Use `cn()` utility (in `index.ts`) for class merging: `cn("bg-red", className)`
-- Re-exported from `index.ts`—import as `import { Button } from "@acme/ui"`
+- Re-exported from `index.ts`—import as `import { Button } from "@ogm/ui"`
+- Add new components: `pnpm ui-add` (uses shadcn CLI interactively)
 
 ### Cross-Package Imports
 
-- Use **workspace protocol**: `import { db } from "@acme/db/client"`
+- Use **workspace protocol**: `import { db } from "@ogm/db/client"`
 - `next.config.js` has `transpilePackages` configured for hot reload during dev
 - Circular dependencies are **forbidden**—data flows one direction: `ui/validators` → `db/auth/api` → `apps`
 
-## ESLint & Tooling
+### Dependency Management
 
-- **Shared config** (`tooling/eslint/`): `baseConfig`, `restrictEnvAccess`, platform-specific (nextjs.ts, react.ts)
-- Each app/package has `eslint.config.ts` that extends base
-- **Prettier**: Configured at root, uses `@ianvs/prettier-plugin-sort-imports` and `prettier-plugin-tailwindcss`
+- **pnpm catalog** (`pnpm-workspace.yaml`): Centralized version management for shared deps (tRPC, React Query, Tailwind, Zod, etc.)
+- Use `"package": "catalog:"` in `package.json` to reference catalog versions
+- React 19 deps use separate `react19` catalog
+
+## Linting & Tooling
+
+- **Biome** (`biome.json`): Single tool for linting + formatting (replaces ESLint + Prettier)
+  - Run `pnpm check` to lint (with task dependencies)
+  - Run `pnpm format` to format all files
+  - Configured with recommended rules + custom overrides (e.g., `noDefaultExport` off for config files)
 - **TypeScript**: Extends from `tooling/typescript/base.json`
+- **Tailwind**: Shared theme in `tooling/tailwind/theme.css`
 
 ## Key Integration Points
 
@@ -104,9 +120,10 @@ All API communication is **type-safe through tRPC**:
    - Use Drizzle query builder in tRPC procedures
 
 3. **Adding a UI component**:
-   - Create in `packages/ui/src/`
+   - Run `pnpm ui-add` and select from shadcn-ui catalog
+   - Or manually create in `packages/ui/src/`
    - Export from `packages/ui/src/index.ts`
-   - Use in apps with `import { Component } from "@acme/ui"`
+   - Use in apps with `import { Component } from "@ogm/ui"`
 
 4. **Cross-app auth**: All apps use same Better Auth instance—session state is shared
 
