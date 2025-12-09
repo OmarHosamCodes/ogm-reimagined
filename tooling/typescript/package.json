@@ -1,7 +1,5 @@
 {
-  "name": "@acme/tsconfig",
+  "name": "@ogm/tsconfig",
   "private": true,
-  "files": [
-    "*.json"
-  ]
+  "files": ["*.json"]
 }

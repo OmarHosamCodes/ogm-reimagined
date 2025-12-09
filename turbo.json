@@ -14,13 +14,12 @@
       "cache": false,
       "persistent": false
     },
-    "format": {
-      "outputs": [".cache/.prettiercache"],
-      "outputLogs": "new-only"
-    },
-    "lint": {
+    "check": {
       "dependsOn": ["^topo", "^build"],
-      "outputs": [".cache/.eslintcache"]
+      "cache": true
+    },
+    "format": {
+      "cache": true
     },
     "typecheck": {
       "dependsOn": ["^topo", "^build"],

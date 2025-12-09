@@ -1,5 +1,5 @@
 {
-  "name": "@acme/expo",
+  "name": "@ogm/expo",
   "private": true,
   "main": "index.ts",
   "scripts": {
@@ -9,8 +9,8 @@
     "dev:ios": "expo start --ios",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path .prettierignore",
-    "lint": "eslint --flag unstable_native_nodejs_ts_config",
+    "check": "biome check .",
+    "format": "biome format .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -44,16 +44,11 @@
     "superjson": "2.2.3"
   },
   "devDependencies": {
-    "@acme/api": "workspace:*",
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tailwind-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@ogm/api": "workspace:*",
+    "@ogm/tailwind-config": "workspace:*",
+    "@ogm/tsconfig": "workspace:*",
     "@types/react": "catalog:react19",
-    "eslint": "catalog:",
-    "prettier": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
-  },
-  "prettier": "@acme/prettier-config"
+  }
 }
