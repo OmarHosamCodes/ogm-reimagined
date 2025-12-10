@@ -38,7 +38,7 @@ export function GhlIntegration({ community }: GhlIntegrationProps) {
   const handleConnect = () => {
     // Redirect to GHL OAuth flow
     const clientId = process.env.NEXT_PUBLIC_GHL_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/api/ghl/oauth/callback`;
+    const redirectUri = `${window.location.origin}/api/ogm/oauth/callback`;
     const state = community.id;
 
     const authUrl = new URL(

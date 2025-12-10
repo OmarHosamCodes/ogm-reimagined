@@ -224,9 +224,9 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 - [x] Create module manager component
 
 ### 5.5 GHL API Routes
-- [x] Create `apps/nextjs/src/app/api/ghl/webhook/route.ts` - GHL webhook handler
-- [x] Create `apps/nextjs/src/app/api/ghl/oauth/callback/route.ts` - GHL OAuth callback
-- [x] Create `apps/nextjs/src/app/api/ghl/sso/route.ts` - GHL SSO validation
+- [x] Create `apps/nextjs/src/app/api/ogm/webhook/route.ts` - GHL webhook handler
+- [x] Create `apps/nextjs/src/app/api/ogm/oauth/callback/route.ts` - GHL OAuth callback
+- [x] Create `apps/nextjs/src/app/api/ogm/sso/route.ts` - GHL SSO validation
 
 ### 5.6 File Upload Routes
 - [x] Create `apps/nextjs/src/app/api/upload/image/route.ts` - Image upload

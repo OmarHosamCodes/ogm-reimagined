@@ -2,14 +2,14 @@ import { BookOpen, LayoutDashboard, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { auth } from "~/auth/server";
+import { getSession } from "~/auth/server";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user) {
     redirect("/api/auth/signin");

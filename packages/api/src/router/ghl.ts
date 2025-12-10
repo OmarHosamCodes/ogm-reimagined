@@ -155,21 +155,20 @@ export const ghlRouter = {
           .returning();
 
         return { user: existingUser, member: updated, created: false };
-      } else {
-        // Create new member
-        const [newMember] = await ctx.db
-          .insert(members)
-          .values({
-            userId,
-            communityId: community.id,
-            ghlContactId: input.contactId,
-            ghlTags: input.tags,
-            role: "member",
-          })
-          .returning();
-
-        return { userId, member: newMember, created: true };
       }
+      // Create new member
+      const [newMember] = await ctx.db
+        .insert(members)
+        .values({
+          userId,
+          communityId: community.id,
+          ghlContactId: input.contactId,
+          ghlTags: input.tags,
+          role: "member",
+        })
+        .returning();
+
+      return { userId, member: newMember, created: true };
     }),
 
   /**
