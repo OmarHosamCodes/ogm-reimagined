@@ -61,13 +61,13 @@ export default function LeaderboardScreen() {
     <View className="flex-1 bg-white dark:bg-zinc-900">
       <FlatList
         data={members ?? []}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.member.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         contentContainerStyle={{ padding: 16 }}
         ListHeaderComponent={() => (
-          <View className="mb-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 p-6">
+          <View className="mb-4 rounded-xl bg-linear-to-r from-purple-500 to-pink-500 p-6">
             <Text className="text-center text-xl font-bold text-white">
               🏆 Community Leaderboard
             </Text>
@@ -81,10 +81,10 @@ export default function LeaderboardScreen() {
             <Text className="text-zinc-500">No members yet</Text>
           </View>
         )}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <View className="flex-row items-center gap-4 border-b border-zinc-100 py-4 dark:border-zinc-800">
             {/* Rank */}
-            <View className="w-10 items-center">{getRankIcon(index + 1)}</View>
+            <View className="w-10 items-center">{getRankIcon(item.rank)}</View>
 
             {/* Avatar */}
             <View className="h-12 w-12 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700">
@@ -105,13 +105,15 @@ export default function LeaderboardScreen() {
               <Text className="font-semibold text-zinc-900 dark:text-white">
                 {item.user?.name ?? "Anonymous"}
               </Text>
-              <Text className="text-sm text-zinc-500">Level {item.level}</Text>
+              <Text className="text-sm text-zinc-500">
+                Level {item.member.level}
+              </Text>
             </View>
 
             {/* Points */}
             <View className="items-end">
               <Text className="font-bold text-zinc-900 dark:text-white">
-                {item.points?.toLocaleString()}
+                {item.member.points?.toLocaleString()}
               </Text>
               <Text className="text-sm text-zinc-500">points</Text>
             </View>

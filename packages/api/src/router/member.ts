@@ -99,7 +99,9 @@ export const memberRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      let member;
+      let member:
+        | Awaited<ReturnType<typeof ctx.db.query.members.findFirst>>
+        | undefined;
 
       if (input.memberId) {
         member = await ctx.db.query.members.findFirst({

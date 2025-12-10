@@ -31,7 +31,11 @@ import { channels, courses, members } from "@ogm/db/schema";
 export const createTRPCContext = async (opts: {
   headers: Headers;
   auth: Auth;
-}) => {
+}): Promise<{
+  authApi: Auth["api"];
+  session: Awaited<ReturnType<Auth["api"]["getSession"]>>;
+  db: typeof db;
+}> => {
   const authApi = opts.auth.api;
   const session = await authApi.getSession({
     headers: opts.headers,
@@ -136,7 +140,9 @@ export const protectedProcedure = t.procedure
  * The communityId must be provided in the input.
  * Adds `member` to the context with the user's membership info.
  */
-export const memberProcedure = protectedProcedure
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Complex tRPC procedure type cannot be easily annotated
+export const memberProcedure: any = protectedProcedure
   .input(z.object({ communityId: z.string().uuid() }))
   .use(async ({ ctx, input, next }) => {
     const member = await ctx.db.query.members.findFirst({
@@ -168,7 +174,10 @@ export const memberProcedure = protectedProcedure
  * Requires authentication AND admin/owner role in the community.
  * The communityId must be provided in the input.
  */
-export const adminProcedure = memberProcedure.use(({ ctx, next }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Complex tRPC procedure type cannot be easily annotated
+// biome-ignore lint/suspicious/noExplicitAny: Middleware parameters need any type
+export const adminProcedure: any = memberProcedure.use(({ ctx, next }: any) => {
   if (!["owner", "admin"].includes(ctx.member.role ?? "")) {
     throw new TRPCError({
       code: "FORBIDDEN",
@@ -190,21 +199,26 @@ export const adminProcedure = memberProcedure.use(({ ctx, next }) => {
  * Requires authentication AND moderator/admin/owner role in the community.
  * The communityId must be provided in the input.
  */
-export const moderatorProcedure = memberProcedure.use(({ ctx, next }) => {
-  if (!["owner", "admin", "moderator"].includes(ctx.member.role ?? "")) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Moderator access required",
-    });
-  }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Complex tRPC procedure type cannot be easily annotated
+export const moderatorProcedure: any = memberProcedure.use(
+  // biome-ignore lint/suspicious/noExplicitAny: Middleware parameters need any type
+  ({ ctx, next }: any) => {
+    if (!["owner", "admin", "moderator"].includes(ctx.member.role ?? "")) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Moderator access required",
+      });
+    }
 
-  return next({
-    ctx: {
-      ...ctx,
-      isModerator: true,
-    },
-  });
-});
+    return next({
+      ctx: {
+        ...ctx,
+        isModerator: true,
+      },
+    });
+  },
+);
 
 /**
  * Owner procedure
@@ -212,7 +226,10 @@ export const moderatorProcedure = memberProcedure.use(({ ctx, next }) => {
  * Requires authentication AND owner role in the community.
  * The communityId must be provided in the input.
  */
-export const ownerProcedure = memberProcedure.use(({ ctx, next }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Complex tRPC procedure type cannot be easily annotated
+// biome-ignore lint/suspicious/noExplicitAny: Middleware parameters need any type
+export const ownerProcedure: any = memberProcedure.use(({ ctx, next }: any) => {
   if (ctx.member.role !== "owner") {
     throw new TRPCError({
       code: "FORBIDDEN",

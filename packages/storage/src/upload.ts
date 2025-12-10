@@ -81,7 +81,7 @@ export function generateFilePath(
   prefix?: string,
 ): string {
   const timestamp = Date.now();
-  const extension = filename.split(".").pop() ?? "";
+
   const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, "_").substring(0, 50);
 
   const parts = [userId, `${timestamp}-${safeName}`];
