@@ -10,26 +10,11 @@ export async function AuthShowcase() {
 
   if (!session) {
     return (
-      <form>
-        <Button
-          size="lg"
-          formAction={async () => {
-            "use server";
-            const res = await auth.api.signInSocial({
-              body: {
-                provider: "discord",
-                callbackURL: "/",
-              },
-            });
-            if (!res.url) {
-              throw new Error("No URL returned from signInSocial");
-            }
-            redirect(res.url);
-          }}
-        >
-          Sign in with Discord
-        </Button>
-      </form>
+      <div className="flex flex-col items-center justify-center gap-4">
+        <p className="text-center text-xl text-muted-foreground">
+          No authentication providers configured
+        </p>
+      </div>
     );
   }
 

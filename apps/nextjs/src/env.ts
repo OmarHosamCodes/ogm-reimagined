@@ -24,8 +24,6 @@ export const env = createEnv({
     // Supabase Storage (S3)
     SUPABASE_URL: z.url(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-    // Optional file storage fallback (Vercel Blob)
-    BLOB_READ_WRITE_TOKEN: z.string().optional(),
     // Optional video hosting
     MUX_TOKEN_ID: z.string().optional(),
     MUX_TOKEN_SECRET: z.string().optional(),
