@@ -27,8 +27,8 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
   - [x] Lessons table (video content)
   - [x] UserProgress table (lesson completion tracking)
   - [x] All Drizzle relations defined
-- [ ] Run `pnpm auth:generate` to sync Better Auth schema
-- [ ] Run `pnpm db:push` to push schema to Postgres
+- [x] Run `pnpm auth:generate` to sync Better Auth schema
+- [x] Run `pnpm db:push` to push schema to Postgres
 
 ### 1.2 Zod Validators
 - [x] Zod schemas created via drizzle-zod in schema.ts (CreateCommunitySchema, CreateMemberSchema, etc.)
@@ -403,6 +403,17 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 - [ ] Test voice note uploads from mobile
 
 ---
+
+## Validation Checklist
+- [x] Phase 1
+- [ ] Phase 2
+- [ ] Phase 3
+- [ ] Phase 4
+- [ ] Phase 5
+- [ ] Phase 6
+- [ ] Phase 7
+- [ ] Phase 8
+- [ ] Phase 9
 
 ## Quick Commands
 

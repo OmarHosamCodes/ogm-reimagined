@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@ogm/tsconfig": "workspace:*",
+    "@types/node": "catalog:default",
     "typescript": "catalog:default"
   }
 }

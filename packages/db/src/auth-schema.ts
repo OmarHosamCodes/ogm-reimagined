@@ -12,6 +12,7 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  ghlGlobalUserId: text("ghl_global_user_id").unique(),
 });
 
 export const session = pgTable(

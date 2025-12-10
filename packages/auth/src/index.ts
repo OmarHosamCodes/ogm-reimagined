@@ -23,6 +23,15 @@ export function initAuth<
     }),
     baseURL: options.baseUrl,
     secret: options.secret,
+    user: {
+      additionalFields: {
+        ghlGlobalUserId: {
+          type: "string",
+          required: false,
+          unique: true,
+        },
+      },
+    },
     plugins: [
       oAuthProxy({
         productionURL: options.productionUrl,
