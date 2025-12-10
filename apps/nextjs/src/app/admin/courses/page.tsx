@@ -1,11 +1,9 @@
-import { BookOpen, Eye, EyeOff, Plus } from "lucide-react";
-import Link from "next/link";
-
 import { desc } from "@ogm/db";
 import { db } from "@ogm/db/client";
 import { courses } from "@ogm/db/schema";
-
-import { Button } from "@ogm/ui/button";
+import { Button } from "@ogm/ui";
+import { BookOpen, Eye, EyeOff, Plus } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdminCoursesPage() {
   const allCourses = await db.query.courses.findMany({

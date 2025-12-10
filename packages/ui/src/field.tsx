@@ -1,12 +1,9 @@
 "use client";
 
+import { cn, Label, Separator } from "@ogm/ui";
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
 import { useMemo } from "react";
-
-import { cn } from "@ogm/ui";
-import { Label } from "@ogm/ui/label";
-import { Separator } from "@ogm/ui/separator";
 
 export function FieldSet({
   className,

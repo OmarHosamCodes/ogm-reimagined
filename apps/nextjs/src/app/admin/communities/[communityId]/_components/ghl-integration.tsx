@@ -1,10 +1,9 @@
 "use client";
 
+import { Button } from "@ogm/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ExternalLink, RefreshCw, X } from "lucide-react";
 import { useTRPC } from "~/trpc/react";
-
-import { Button } from "@ogm/ui/button";
 
 interface Community {
   id: string;

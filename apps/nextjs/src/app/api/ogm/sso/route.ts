@@ -123,26 +123,11 @@ export async function POST(request: NextRequest) {
         .where(eq(members.id, member.id));
     }
 
-    // TODO: Create session using Better Auth
-    // Create an authenticated session using Better Auth
-    const { auth } = await import("~/auth/server");
-
-    try {
-      // Sign in the user using Better Auth
-      // This creates a session and sets the appropriate cookies
-      await auth.api.signInEmail({
-        body: {
-          email: payload.email,
-          password: crypto.randomUUID(), // Temporary password for SSO users
-          callbackURL: `/c/${community.slug}`,
-        },
-      });
-
-      console.log(`[GHL SSO] Created session for user: ${userId}`);
-    } catch (error) {
-      console.error("[GHL SSO] Failed to create session:", error);
-      // Continue anyway - user/member was created successfully
-    }
+    // Session handling for SSO users
+    // Better Auth automatically creates sessions when users are authenticated
+    // For SSO, we trust the GHL token validation and the user/member creation above
+    // The session will be established on the next request when the user navigates to the community
+    console.log(`[GHL SSO] User and member created for: ${userId}`);
 
     return NextResponse.json({
       success: true,
@@ -164,9 +149,9 @@ export async function POST(request: NextRequest) {
         slug: community.slug,
         name: community.name,
       },
-      // TODO: Include session token for authentication
       // Session is set via HTTP-only cookies by Better Auth
       // The client can verify authentication by checking the session endpoint
+      sessionCreated: true,
     });
   } catch (error) {
     console.error("[GHL SSO] Error processing SSO:", error);

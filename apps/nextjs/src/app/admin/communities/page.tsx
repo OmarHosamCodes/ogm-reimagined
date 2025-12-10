@@ -1,11 +1,9 @@
-import { ExternalLink, Plus, Users } from "lucide-react";
-import Link from "next/link";
-
 import { desc } from "@ogm/db";
 import { db } from "@ogm/db/client";
 import { communities } from "@ogm/db/schema";
-
-import { Button } from "@ogm/ui/button";
+import { Button } from "@ogm/ui";
+import { ExternalLink, Plus, Users } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdminCommunitiesPage() {
   const allCommunities = await db.query.communities.findMany({

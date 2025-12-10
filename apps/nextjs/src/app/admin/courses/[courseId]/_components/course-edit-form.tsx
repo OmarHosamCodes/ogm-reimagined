@@ -1,12 +1,9 @@
 "use client";
 
+import { Button, Input, Label } from "@ogm/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTRPC } from "~/trpc/react";
-
-import { Button } from "@ogm/ui/button";
-import { Input } from "@ogm/ui/input";
-import { Label } from "@ogm/ui/label";
 
 interface Course {
   id: string;

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@ogm/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Heart,
@@ -10,8 +11,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTRPC } from "~/trpc/react";
-
-import { Button } from "@ogm/ui/button";
 
 interface Post {
   id: string;

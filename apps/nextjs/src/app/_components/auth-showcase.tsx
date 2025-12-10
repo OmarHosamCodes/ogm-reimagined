@@ -1,7 +1,6 @@
+import { Button } from "@ogm/ui";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-import { Button } from "@ogm/ui/button";
 
 import { auth, getSession } from "~/auth/server";
 

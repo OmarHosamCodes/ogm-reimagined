@@ -1,6 +1,5 @@
+import { Button } from "@ogm/ui";
 import { useNavigate } from "@tanstack/react-router";
-
-import { Button } from "@ogm/ui/button";
 
 import { authClient } from "~/auth/client";
 

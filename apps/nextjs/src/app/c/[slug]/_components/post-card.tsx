@@ -1,11 +1,10 @@
 "use client";
 
+import { Button } from "@ogm/ui";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
-
-import { Button } from "@ogm/ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "~/trpc/react";
 
 interface Post {

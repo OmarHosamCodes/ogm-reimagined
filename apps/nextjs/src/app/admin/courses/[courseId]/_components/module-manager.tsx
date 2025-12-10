@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Input } from "@ogm/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -12,9 +13,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTRPC } from "~/trpc/react";
-
-import { Button } from "@ogm/ui/button";
-import { Input } from "@ogm/ui/input";
 
 interface Lesson {
   id: string;

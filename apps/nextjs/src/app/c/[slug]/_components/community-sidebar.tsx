@@ -1,11 +1,9 @@
 "use client";
 
-import { BookOpen, Hash, Lock, Settings, Trophy, User } from "lucide-react";
+import { Button, cn } from "@ogm/ui";
+import { BookOpen, Hash, Lock, Trophy, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { cn } from "@ogm/ui";
-import { Button } from "@ogm/ui/button";
 
 interface Channel {
   id: string;
@@ -37,8 +35,8 @@ export function CommunitySidebar({
 
   return (
     <aside className="flex w-64 flex-col border-r bg-muted/30">
-      {/* Community header */}
-      <div className="border-b p-4">
+      {/* Community header - Hidden on mobile, shown in top nav instead */}
+      <div className="hidden border-b p-4 md:block">
         <Link href={baseUrl} className="flex items-center gap-3">
           {community.logoUrl ? (
             <img
@@ -48,7 +46,7 @@ export function CommunitySidebar({
             />
           ) : (
             <div
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-white font-bold"
+              className="flex h-10 w-10 items-center justify-center rounded-lg font-bold text-white"
               style={{ backgroundColor: community.themeColor ?? "#6366f1" }}
             >
               {community.name.charAt(0).toUpperCase()}
@@ -104,16 +102,6 @@ export function CommunitySidebar({
           </div>
         </div>
       </nav>
-
-      {/* Footer */}
-      <div className="border-t p-2">
-        <SidebarLink
-          href={`/admin/communities/${community.id}`}
-          icon={Settings}
-          label="Admin Settings"
-          isActive={false}
-        />
-      </div>
     </aside>
   );
 }

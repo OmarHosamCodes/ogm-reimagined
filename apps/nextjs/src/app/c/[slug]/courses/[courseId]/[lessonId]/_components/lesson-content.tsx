@@ -1,11 +1,10 @@
 "use client";
 
+import { Button } from "@ogm/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useTRPC } from "~/trpc/react";
-
-import { Button } from "@ogm/ui/button";
 
 interface Lesson {
   id: string;
@@ -117,7 +116,7 @@ export function LessonContent({
 
 function getYouTubeEmbedUrl(url: string): string {
   const videoId = url.match(
-    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/,
+    /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/,
   )?.[1];
   return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
 }

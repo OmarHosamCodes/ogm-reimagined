@@ -1,11 +1,10 @@
 "use client";
 
+import { Button } from "@ogm/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Send } from "lucide-react";
 import { useState } from "react";
 import { useTRPC } from "~/trpc/react";
-
-import { Button } from "@ogm/ui/button";
 
 interface CommentSectionProps {
   postId: string;

@@ -1,39 +1,50 @@
+import { Skeleton } from "@ogm/ui";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { getSession } from "~/auth/server";
 import { HydrateClient, prefetch, trpc } from "~/trpc/server";
-import { AuthShowcase } from "./_components/auth-showcase";
-import {
-  CreatePostForm,
-  PostCardSkeleton,
-  PostList,
-} from "./_components/posts";
+import { CommunitiesList } from "./_components/communities-list";
+import { JoinCommunityDialog } from "./_components/join-community-dialog";
 
-export default function HomePage() {
-  prefetch(trpc.post.all.queryOptions());
+export default async function HomePage() {
+  const session = await getSession();
+
+  // Redirect to signin if not authenticated
+  if (!session) {
+    redirect("/signin");
+  }
+
+  // Prefetch user's communities
+  prefetch(trpc.auth.getUserCommunities.queryOptions());
 
   return (
     <HydrateClient>
-      <main className="container h-screen py-16">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-primary">T3</span> Turbo
-          </h1>
-          <AuthShowcase />
-
-          <CreatePostForm />
-          <div className="w-full max-w-2xl overflow-y-scroll">
-            <Suspense
-              fallback={
-                <div className="flex w-full flex-col gap-4">
-                  <PostCardSkeleton />
-                  <PostCardSkeleton />
-                  <PostCardSkeleton />
-                </div>
-              }
-            >
-              <PostList />
-            </Suspense>
+      <main className="container min-h-screen py-16">
+        <div className="mx-auto max-w-6xl space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold">My Communities</h1>
+              <p className="mt-2 text-muted-foreground">
+                Welcome back, {session.user.name ?? session.user.email}
+              </p>
+            </div>
+            <JoinCommunityDialog />
           </div>
+
+          {/* Communities List */}
+          <Suspense
+            fallback={
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-48" />
+                <Skeleton className="h-48" />
+                <Skeleton className="h-48" />
+              </div>
+            }
+          >
+            <CommunitiesList />
+          </Suspense>
         </div>
       </main>
     </HydrateClient>
