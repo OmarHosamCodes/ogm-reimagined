@@ -25,13 +25,10 @@
     "ios": "expo run:ios"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.0.6",
     "@turbo/gen": "^2.6.3",
-    "dotenv-cli": "^10.0.0",
+    "dotenv-cli": "^11.0.0",
     "turbo": "^2.6.3",
     "typescript": "catalog:"
-  },
-  "dependencies": {
-    "pg": "^8.16.3"
   }
 }
