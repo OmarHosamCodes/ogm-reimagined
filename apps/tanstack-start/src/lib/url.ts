@@ -4,11 +4,11 @@ export function getBaseUrl() {
   if (typeof window !== "undefined") {
     return window.location.origin;
   }
-  if (env.VERCEL_ENV === "production") {
-    return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (env.BASE_URL) {
+    return env.BASE_URL;
   }
-  if (env.VERCEL_ENV === "preview") {
-    return `https://${env.VERCEL_URL}`;
+  if (env.RAILWAY_PUBLIC_DOMAIN) {
+    return `https://${env.RAILWAY_PUBLIC_DOMAIN}`;
   }
 
   // eslint-disable-next-line no-restricted-properties

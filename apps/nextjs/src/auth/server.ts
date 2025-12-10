@@ -8,16 +8,17 @@ import { initAuth } from "@ogm/auth";
 
 import { env } from "~/env";
 
-const baseUrl =
-  env.VERCEL_ENV === "production"
-    ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : env.VERCEL_ENV === "preview"
-      ? `https://${env.VERCEL_URL}`
-      : "http://localhost:3000";
+const getBaseUrl = () => {
+  if (env.BASE_URL) return env.BASE_URL;
+  if (env.RAILWAY_PUBLIC_DOMAIN) return `https://${env.RAILWAY_PUBLIC_DOMAIN}`;
+  return "http://localhost:3000";
+};
+
+const baseUrl = getBaseUrl();
 
 export const auth = initAuth({
   baseUrl,
-  productionUrl: `https://${env.VERCEL_PROJECT_PRODUCTION_URL ?? "turbo.t3.gg"}`,
+  productionUrl: env.BASE_URL ?? "https://turbo.t3.gg",
   secret: env.AUTH_SECRET,
   extraPlugins: [nextCookies()],
 });

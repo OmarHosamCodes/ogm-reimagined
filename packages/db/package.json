@@ -29,13 +29,14 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@vercel/postgres": "^0.10.0",
     "drizzle-orm": "^0.44.7",
     "drizzle-zod": "^0.8.3",
+    "pg": "^8.13.1",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@ogm/tsconfig": "workspace:*",
+    "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.31.5",
     "typescript": "catalog:"
   }

@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "pnpm start:next"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+
+[service]
+internalPort = 3000

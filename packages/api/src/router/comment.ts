@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, asc, eq, sql } from "@ogm/db";
+import { and, asc, eq, inArray, sql } from "@ogm/db";
 import {
   CreateCommentSchema,
   comments,
@@ -106,20 +106,26 @@ export const commentRouter = {
 
       // Get all replies for these comments
       const commentIds = topLevelComments.map((c) => c.id);
-      const replies = await ctx.db.query.comments.findMany({
-        where: sql`${comments.parentId} = ANY(${commentIds})`,
-        orderBy: asc(comments.createdAt),
-        with: {
-          author: true,
-        },
-      });
+      const replies =
+        commentIds.length > 0
+          ? await ctx.db.query.comments.findMany({
+              where: inArray(comments.parentId, commentIds),
+              orderBy: asc(comments.createdAt),
+              with: {
+                author: true,
+              },
+            })
+          : [];
 
       // Get user info for all authors
       const allComments = [...topLevelComments, ...replies];
       const authorUserIds = allComments.map((c) => c.author.userId);
-      const users = await ctx.db.query.user.findMany({
-        where: sql`${user.id} = ANY(${authorUserIds})`,
-      });
+      const users =
+        authorUserIds.length > 0
+          ? await ctx.db.query.user.findMany({
+              where: inArray(user.id, authorUserIds),
+            })
+          : [];
       const userMap = new Map(users.map((u) => [u.id, u]));
 
       // Build threaded structure

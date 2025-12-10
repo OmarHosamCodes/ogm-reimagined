@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, desc, eq, sql } from "@ogm/db";
+import { and, desc, eq, inArray } from "@ogm/db";
 import {
   CreatePostSchema,
   channels,
@@ -16,6 +16,38 @@ import {
 import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const postRouter = {
+  /**
+   * Get all posts (demo/development endpoint)
+   */
+  all: publicProcedure.query(async ({ ctx }) => {
+    const postList = await ctx.db.query.posts.findMany({
+      orderBy: desc(posts.createdAt),
+      limit: 50,
+      with: {
+        author: true,
+        channel: true,
+      },
+    });
+
+    // Get user info for authors
+    const authorUserIds = postList.map((p) => p.author.userId);
+    const users =
+      authorUserIds.length > 0
+        ? await ctx.db.query.user.findMany({
+            where: inArray(user.id, authorUserIds),
+          })
+        : [];
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    return postList.map((p) => ({
+      ...p,
+      author: {
+        ...p.author,
+        user: userMap.get(p.author.userId),
+      },
+    }));
+  }),
+
   /**
    * Create a new post in a channel
    */
@@ -174,9 +206,12 @@ export const postRouter = {
 
       // Get user info for authors
       const authorUserIds = postList.map((p) => p.author.userId);
-      const users = await ctx.db.query.user.findMany({
-        where: sql`${user.id} = ANY(${authorUserIds})`,
-      });
+      const users =
+        authorUserIds.length > 0
+          ? await ctx.db.query.user.findMany({
+              where: inArray(user.id, authorUserIds),
+            })
+          : [];
       const userMap = new Map(users.map((u) => [u.id, u]));
 
       // Check if current user liked posts
@@ -191,12 +226,15 @@ export const postRouter = {
 
         if (member) {
           const postIds = postList.map((p) => p.id);
-          const likesList = await ctx.db.query.likes.findMany({
-            where: and(
-              sql`${likes.postId} = ANY(${postIds})`,
-              eq(likes.memberId, member.id),
-            ),
-          });
+          const likesList =
+            postIds.length > 0
+              ? await ctx.db.query.likes.findMany({
+                  where: and(
+                    inArray(likes.postId, postIds),
+                    eq(likes.memberId, member.id),
+                  ),
+                })
+              : [];
           memberLikes = likesList
             .map((l) => l.postId)
             .filter(Boolean) as string[];
@@ -281,7 +319,7 @@ export const postRouter = {
 
       // Get posts from accessible channels
       const postList = await ctx.db.query.posts.findMany({
-        where: sql`${posts.channelId} = ANY(${accessibleChannelIds})`,
+        where: inArray(posts.channelId, accessibleChannelIds),
         orderBy: desc(posts.createdAt),
         limit: input.limit + 1,
         with: {
@@ -292,9 +330,12 @@ export const postRouter = {
 
       // Get user info for authors
       const authorUserIds = postList.map((p) => p.author.userId);
-      const users = await ctx.db.query.user.findMany({
-        where: sql`${user.id} = ANY(${authorUserIds})`,
-      });
+      const users =
+        authorUserIds.length > 0
+          ? await ctx.db.query.user.findMany({
+              where: inArray(user.id, authorUserIds),
+            })
+          : [];
       const userMap = new Map(users.map((u) => [u.id, u]));
 
       let nextCursor: string | undefined;

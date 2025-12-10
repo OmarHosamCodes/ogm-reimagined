@@ -1,11 +1,10 @@
 import { createEnv } from "@t3-oss/env-nextjs";
-import { vercel } from "@t3-oss/env-nextjs/presets-zod";
 import { z } from "zod/v4";
 
 import { authEnv } from "@ogm/auth/env";
 
 export const env = createEnv({
-  extends: [authEnv(), vercel()],
+  extends: [authEnv()],
   shared: {
     NODE_ENV: z
       .enum(["development", "production", "test"])
@@ -17,6 +16,10 @@ export const env = createEnv({
    */
   server: {
     POSTGRES_URL: z.url(),
+    // Base URL for production deployment (Railway, etc.)
+    BASE_URL: z.url().optional(),
+    // Railway auto-injects this
+    RAILWAY_PUBLIC_DOMAIN: z.string().optional(),
     // GHL Integration
     GHL_CLIENT_ID: z.string().min(1),
     GHL_CLIENT_SECRET: z.string().min(1),

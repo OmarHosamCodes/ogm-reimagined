@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, eq, sql } from "@ogm/db";
+import { and, eq, inArray, sql } from "@ogm/db";
 import { courses, lessons, members, userProgress } from "@ogm/db/schema";
 
 import { protectedProcedure } from "../trpc";
@@ -187,7 +187,7 @@ export const progressRouter = {
       const progress = await ctx.db.query.userProgress.findMany({
         where: and(
           eq(userProgress.memberId, member.id),
-          sql`${userProgress.lessonId} = ANY(${lessonIds})`,
+          inArray(userProgress.lessonId, lessonIds),
         ),
       });
 

@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { and, eq, sql } from "@ogm/db";
+import { and, eq, inArray, sql } from "@ogm/db";
 import { members, user } from "@ogm/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
@@ -343,9 +343,12 @@ export const memberRouter = {
 
       // Get user info for each member
       const userIds = leaderboard.map((m) => m.userId);
-      const users = await ctx.db.query.user.findMany({
-        where: sql`${user.id} = ANY(${userIds})`,
-      });
+      const users =
+        userIds.length > 0
+          ? await ctx.db.query.user.findMany({
+              where: inArray(user.id, userIds),
+            })
+          : [];
 
       const userMap = new Map(users.map((u) => [u.id, u]));
 
