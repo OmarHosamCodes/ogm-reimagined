@@ -1,9 +1,8 @@
+import { and, eq } from "@ogm/db";
+import { communities, members, user } from "@ogm/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
-
-import { and, eq } from "@ogm/db";
-import { communities, members, user } from "@ogm/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -27,12 +26,49 @@ export const ghlRouter = {
     )
     .mutation(async ({ ctx, input }) => {
       // TODO: Implement actual GHL OAuth token exchange
-      // This would:
-      // 1. Call GHL's token endpoint with the code
-      // 2. Get access_token, refresh_token, expires_in
-      // 3. Update the community record with the tokens
+      // Exchange the authorization code for tokens
+      const clientId = process.env.GHL_CLIENT_ID;
+      const clientSecret = process.env.GHL_CLIENT_SECRET;
 
-      // For now, we just verify the community exists
+      if (!clientId || !clientSecret) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "GHL credentials not configured",
+        });
+      }
+
+      const tokenResponse = await fetch(
+        "https://services.leadconnectorhq.com/oauth/token",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            client_id: clientId,
+            client_secret: clientSecret,
+            grant_type: "authorization_code",
+            code: input.code,
+          }),
+        },
+      );
+
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error("[GHL OAuth] Token exchange failed:", errorText);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to exchange code for tokens",
+        });
+      }
+
+      const tokens = (await tokenResponse.json()) as {
+        access_token: string;
+        refresh_token: string;
+        expires_in: number;
+      };
+
+      // Find community by location ID
       const community = await ctx.db.query.communities.findFirst({
         where: eq(communities.ghlLocationId, input.locationId),
       });
@@ -44,15 +80,15 @@ export const ghlRouter = {
         });
       }
 
-      // Placeholder: In production, you would exchange the code here
-      // const tokens = await exchangeGhlCode(input.code);
-      // await ctx.db.update(communities)
-      //   .set({
-      //     ghlAccessToken: tokens.access_token,
-      //     ghlRefreshToken: tokens.refresh_token,
-      //     ghlTokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
-      //   })
-      //   .where(eq(communities.id, community.id));
+      // Update community with tokens
+      await ctx.db
+        .update(communities)
+        .set({
+          ghlAccessToken: tokens.access_token,
+          ghlRefreshToken: tokens.refresh_token,
+          ghlTokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
+        })
+        .where(eq(communities.id, community.id));
 
       return { success: true, communityId: community.id };
     }),
@@ -232,12 +268,7 @@ export const ghlRouter = {
     )
     .query(async ({ ctx, input }) => {
       // TODO: Implement actual GHL SSO token validation
-      // This would:
-      // 1. Verify the token with GHL's API
-      // 2. Extract contact/user info from the token
-      // 3. Return the user and member info
-
-      // Find community
+      // Find community first
       const community = await ctx.db.query.communities.findFirst({
         where: eq(communities.ghlLocationId, input.locationId),
       });
@@ -249,12 +280,21 @@ export const ghlRouter = {
         });
       }
 
-      // Placeholder: In production, you would validate the token here
-      // const tokenData = await validateGhlSsoToken(input.token);
+      // Validate the SSO token with GHL's API
+      // In production, this would:
+      // 1. Decode the JWT token
+      // 2. Verify signature with GHL's public key
+      // 3. Check expiration
+      // 4. Extract user/contact information
+
+      // For now, we return a structure indicating validation is needed
+      // In a real implementation, you would make an API call to GHL
+      // to validate the token and get user information
 
       return {
         valid: false,
-        message: "SSO validation not yet implemented",
+        message:
+          "SSO token validation requires GHL API integration. Please implement JWT verification or API validation.",
         community: {
           id: community.id,
           slug: community.slug,

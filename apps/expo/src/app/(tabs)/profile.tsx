@@ -18,20 +18,20 @@ import {
 
 import { trpc } from "~/utils/api";
 import { authClient } from "~/utils/auth";
+import { useCommunity } from "~/utils/CommunityContext";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // TODO: Get from community context
-  const communityId = "default-community-id";
+  const { communityId } = useCommunity();
 
   const { data: session, isLoading } = useQuery(
     trpc.auth.getSession.queryOptions(),
   );
 
   const { data: memberProfile } = useQuery(
-    trpc.member.getProfile.queryOptions({ communityId }),
+    trpc.member.getProfile.queryOptions({ communityId: communityId ?? "" }),
   );
 
   const { data: progress } = useQuery(

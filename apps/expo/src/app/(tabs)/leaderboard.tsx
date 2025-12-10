@@ -11,19 +11,22 @@ import {
 } from "react-native";
 
 import { trpc } from "~/utils/api";
+import { useCommunity } from "~/utils/CommunityContext";
 
 export default function LeaderboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
-  // TODO: Get from community context
-  const communityId = "default-community-id";
+  const { communityId } = useCommunity();
 
   const {
     data: members,
     isLoading,
     refetch,
   } = useQuery(
-    trpc.member.leaderboard.queryOptions({ communityId, limit: 50 }),
+    trpc.member.leaderboard.queryOptions({
+      communityId: communityId ?? "",
+      limit: 50,
+    }),
   );
 
   const onRefresh = useCallback(async () => {

@@ -1,11 +1,10 @@
-import { notFound, redirect } from "next/navigation";
-
 import { and, eq } from "@ogm/db";
 import { db } from "@ogm/db/client";
 import { communities, members, posts, userProgress } from "@ogm/db/schema";
 import { Badge, Progress } from "@ogm/ui";
+import { notFound, redirect } from "next/navigation";
 
-import { auth } from "~/auth/server";
+import { getSession } from "~/auth/server";
 
 interface ProfilePageProps {
   params: Promise<{ slug: string }>;
@@ -14,9 +13,9 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { slug } = await params;
 
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user) {
-    redirect("/api/auth/signin");
+    redirect("/signin");
   }
 
   const community = await db.query.communities.findFirst({

@@ -1,8 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-
 import { and, eq } from "@ogm/db";
 import { db } from "@ogm/db/client";
 import { communities, members } from "@ogm/db/schema";
+import { type NextRequest, NextResponse } from "next/server";
 
 // import { env } from "~/env";
 
@@ -32,14 +31,30 @@ export async function POST(request: NextRequest) {
     const payload = JSON.parse(body) as GHLWebhookPayload;
 
     // TODO: Verify webhook signature
-    // const signature = request.headers.get("x-ghl-signature");
-    // const expectedSignature = crypto
-    //   .createHmac("sha256", env.GHL_WEBHOOK_SECRET)
-    //   .update(body)
-    //   .digest("hex");
-    // if (signature !== expectedSignature) {
-    //   return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    // }
+    // Verify webhook signature to ensure it's from GHL
+    const signature = request.headers.get("x-ghl-signature");
+    const webhookSecret = process.env.GHL_WEBHOOK_SECRET;
+
+    if (webhookSecret && signature) {
+      const crypto = await import("crypto");
+      const expectedSignature = crypto
+        .createHmac("sha256", webhookSecret)
+        .update(body)
+        .digest("hex");
+
+      if (signature !== expectedSignature) {
+        console.error("[GHL Webhook] Invalid signature");
+        return NextResponse.json(
+          { error: "Invalid signature" },
+          { status: 401 },
+        );
+      }
+    } else if (webhookSecret) {
+      // Secret is configured but no signature provided
+      console.error("[GHL Webhook] Missing signature header");
+      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+    }
+    // If no webhook secret is configured, skip verification (development mode)
 
     // Find the community for this location
     const community = await db.query.communities.findFirst({

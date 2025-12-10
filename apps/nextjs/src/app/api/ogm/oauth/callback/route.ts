@@ -1,8 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-
 import { eq } from "@ogm/db";
 import { db } from "@ogm/db/client";
 import { communities } from "@ogm/db/schema";
+import { type NextRequest, NextResponse } from "next/server";
 
 // import { env } from "~/env";
 
@@ -44,26 +43,43 @@ export async function GET(request: NextRequest) {
     }
 
     // TODO: Exchange code for tokens
-    // In production, you would call GHL's token endpoint:
-    // const tokenResponse = await fetch("https://services.leadconnectorhq.com/oauth/token", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/x-www-form-urlencoded",
-    //   },
-    //   body: new URLSearchParams({
-    //     client_id: env.GHL_CLIENT_ID,
-    //     client_secret: env.GHL_CLIENT_SECRET,
-    //     grant_type: "authorization_code",
-    //     code,
-    //     redirect_uri: `${env.NEXT_PUBLIC_APP_URL}/api/ghl/oauth/callback`,
-    //   }),
-    // });
-    //
-    // if (!tokenResponse.ok) {
-    //   throw new Error("Failed to exchange code for tokens");
-    // }
-    //
-    // const tokens = await tokenResponse.json() as GHLTokenResponse;
+    // Exchange authorization code for access tokens
+    const clientId = process.env.GHL_CLIENT_ID;
+    const clientSecret = process.env.GHL_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      console.error("[GHL OAuth] Missing GHL credentials");
+      return NextResponse.redirect(
+        new URL("/admin?error=missing_ghl_config", request.url),
+      );
+    }
+
+    const tokenResponse = await fetch(
+      "https://services.leadconnectorhq.com/oauth/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: `${new URL(request.url).origin}/api/ogm/oauth/callback`,
+        }),
+      },
+    );
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error("[GHL OAuth] Token exchange failed:", errorText);
+      return NextResponse.redirect(
+        new URL("/admin?error=token_exchange_failed", request.url),
+      );
+    }
+
+    const tokens = (await tokenResponse.json()) as GHLTokenResponse;
 
     // For now, we'll just check if the community exists
     const existingCommunity = await db.query.communities.findFirst({
@@ -71,9 +87,18 @@ export async function GET(request: NextRequest) {
     });
 
     if (existingCommunity) {
-      // Community already exists, update tokens (when implemented)
+      // Community already exists, update tokens
+      await db
+        .update(communities)
+        .set({
+          ghlAccessToken: tokens.access_token,
+          ghlRefreshToken: tokens.refresh_token,
+          ghlTokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
+        })
+        .where(eq(communities.id, existingCommunity.id));
+
       console.log(
-        `[GHL OAuth] Community already exists for location: ${locationId}`,
+        `[GHL OAuth] Updated tokens for community: ${existingCommunity.id}`,
       );
 
       // Redirect to community admin
@@ -85,19 +110,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Store the location ID in a temporary session/cookie for the setup flow
+    // Store the location ID and tokens in a temporary session/cookie for the setup flow
     // The user will complete community setup after OAuth
     const response = NextResponse.redirect(
       new URL(`/admin/communities/new?locationId=${locationId}`, request.url),
     );
 
-    // Set a temporary cookie with the location ID
+    // Set temporary cookies with the location ID and tokens
     response.cookies.set("ghl_pending_location", locationId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 15, // 15 minutes
     });
+
+    response.cookies.set(
+      "ghl_pending_tokens",
+      JSON.stringify({
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresIn: tokens.expires_in,
+      }),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 15, // 15 minutes
+      },
+    );
 
     return response;
   } catch (error) {

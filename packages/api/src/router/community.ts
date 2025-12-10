@@ -1,9 +1,8 @@
+import { and, desc, eq } from "@ogm/db";
+import { CreateCommunitySchema, communities, members } from "@ogm/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
-
-import { and, desc, eq } from "@ogm/db";
-import { CreateCommunitySchema, communities, members } from "@ogm/db/schema";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -235,9 +234,59 @@ export const communityRouter = {
       }
 
       // TODO: Implement actual GHL token refresh logic
-      // This would call GHL's OAuth token refresh endpoint
-      // For now, we'll just return the current community
+      // Call GHL's OAuth token refresh endpoint
+      const clientId = process.env.GHL_CLIENT_ID;
+      const clientSecret = process.env.GHL_CLIENT_SECRET;
 
-      return community;
+      if (!clientId || !clientSecret) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "GHL credentials not configured",
+        });
+      }
+
+      const refreshResponse = await fetch(
+        "https://services.leadconnectorhq.com/oauth/token",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            client_id: clientId,
+            client_secret: clientSecret,
+            grant_type: "refresh_token",
+            refresh_token: community.ghlRefreshToken,
+          }),
+        },
+      );
+
+      if (!refreshResponse.ok) {
+        const errorText = await refreshResponse.text();
+        console.error("[GHL] Token refresh failed:", errorText);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to refresh GHL tokens",
+        });
+      }
+
+      const tokens = (await refreshResponse.json()) as {
+        access_token: string;
+        refresh_token: string;
+        expires_in: number;
+      };
+
+      // Update community with new tokens
+      const [updatedCommunity] = await ctx.db
+        .update(communities)
+        .set({
+          ghlAccessToken: tokens.access_token,
+          ghlRefreshToken: tokens.refresh_token,
+          ghlTokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
+        })
+        .where(eq(communities.id, input.communityId))
+        .returning();
+
+      return updatedCommunity;
     }),
 } satisfies TRPCRouterRecord;

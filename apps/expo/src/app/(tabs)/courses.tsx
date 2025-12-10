@@ -13,19 +13,21 @@ import {
 } from "react-native";
 
 import { trpc } from "~/utils/api";
+import { useCommunity } from "~/utils/CommunityContext";
 
 export default function CoursesScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
 
-  // TODO: Get from community context
-  const communityId = "default-community-id";
+  const { communityId } = useCommunity();
 
   const {
     data: courses,
     isLoading,
     refetch,
-  } = useQuery(trpc.course.list.queryOptions({ communityId }));
+  } = useQuery(
+    trpc.course.list.queryOptions({ communityId: communityId ?? "" }),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -33,7 +35,7 @@ export default function CoursesScreen() {
     setRefreshing(false);
   }, [refetch]);
 
-  if (isLoading) {
+  if (isLoading || !communityId) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#c03484" />

@@ -13,20 +13,23 @@ import {
 } from "react-native";
 
 import { trpc } from "~/utils/api";
+import { useCommunity } from "~/utils/CommunityContext";
 
 export default function FeedScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
 
-  // TODO: Get from community context
-  const communityId = "default-community-id";
+  const { communityId } = useCommunity();
 
   const {
     data: posts,
     isLoading,
     refetch,
   } = useQuery(
-    trpc.post.listByCommunity.queryOptions({ communityId, limit: 20 }),
+    trpc.post.listByCommunity.queryOptions({
+      communityId: communityId ?? "",
+      limit: 20,
+    }),
   );
 
   const onRefresh = useCallback(async () => {
