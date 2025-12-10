@@ -11,6 +11,9 @@ export function authEnv() {
           ? z.string().min(1)
           : z.string().min(1).optional(),
       NODE_ENV: z.enum(["development", "production"]).optional(),
+      // GHL Integration (optional in auth package, required in apps)
+      GHL_CLIENT_ID: z.string().optional(),
+      GHL_CLIENT_SECRET: z.string().optional(),
     },
     runtimeEnv: process.env,
     skipValidation:

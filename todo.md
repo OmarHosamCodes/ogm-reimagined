@@ -32,13 +32,13 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 
 ### 1.2 Zod Validators
 - [x] Zod schemas created via drizzle-zod in schema.ts (CreateCommunitySchema, CreateMemberSchema, etc.)
-- [ ] Create `packages/validators/src/community.ts` - Community validation schemas
-- [ ] Create `packages/validators/src/member.ts` - Member validation schemas
-- [ ] Create `packages/validators/src/channel.ts` - Channel validation schemas
-- [ ] Create `packages/validators/src/post.ts` - Post validation schemas
-- [ ] Create `packages/validators/src/comment.ts` - Comment validation schemas
-- [ ] Create `packages/validators/src/course.ts` - Course/Module/Lesson schemas
-- [ ] Update `packages/validators/src/index.ts` to export all schemas
+- [x] Create `packages/validators/src/community.ts` - Community validation schemas
+- [x] Create `packages/validators/src/member.ts` - Member validation schemas
+- [x] Create `packages/validators/src/channel.ts` - Channel validation schemas
+- [x] Create `packages/validators/src/post.ts` - Post validation schemas
+- [x] Create `packages/validators/src/comment.ts` - Comment validation schemas
+- [x] Create `packages/validators/src/course.ts` - Course/Module/Lesson schemas
+- [x] Update `packages/validators/src/index.ts` to export all schemas
 
 ### 1.3 Environment Variables
 - [x] Add GHL env vars to `.env.example`
@@ -48,8 +48,8 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
   - `NEXT_PUBLIC_GHL_CLIENT_ID`
   - `BLOB_READ_WRITE_TOKEN` (optional)
   - `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` (optional)
-- [ ] Add GHL env vars to `apps/nextjs/src/env.ts`
-- [ ] Add GHL env vars to `packages/auth/env.ts`
+- [x] Add GHL env vars to `apps/nextjs/src/env.ts`
+- [x] Add GHL env vars to `packages/auth/env.ts`
 
 ---
 
@@ -65,8 +65,8 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 - [x] Create permission middleware (in trpc.ts)
 - [x] Update `packages/api/src/trpc.ts` with new procedures:
   - [x] `memberProcedure` - Requires community membership
-  - [ ] `adminProcedure` - Requires admin/moderator role
-  - [ ] `ownerProcedure` - Requires community owner
+  - [x] `adminProcedure` - Requires admin/moderator role
+  - [x] `ownerProcedure` - Requires community owner
 
 ---
 
@@ -154,25 +154,25 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 ## Phase 4: UI Components
 
 ### 4.1 Add shadcn-ui Components
-- [ ] Add `card` component
-- [ ] Add `avatar` component
-- [ ] Add `tabs` component
-- [ ] Add `dialog` component
-- [ ] Add `badge` component
-- [ ] Add `progress` component
-- [ ] Add `sidebar` component
-- [ ] Add `skeleton` component
-- [ ] Add `textarea` component
-- [ ] Add `select` component
-- [ ] Add `switch` component
-- [ ] Add `alert` component
+- [x] Add `card` component
+- [x] Add `avatar` component
+- [x] Add `tabs` component
+- [x] Add `dialog` component
+- [x] Add `badge` component
+- [x] Add `progress` component
+- [x] Add `sidebar` component
+- [x] Add `skeleton` component
+- [x] Add `textarea` component
+- [x] Add `select` component
+- [x] Add `switch` component
+- [x] Add `alert` component
 
 ### 4.2 Custom Components
-- [ ] Create `packages/ui/src/rich-text-editor.tsx` - TipTap or similar
-- [ ] Create `packages/ui/src/video-player.tsx` - Video playback component
-- [ ] Create `packages/ui/src/file-upload.tsx` - File upload with preview
-- [ ] Create `packages/ui/src/community-avatar.tsx` - Community branding
-- [ ] Create `packages/ui/src/member-avatar.tsx` - Member with level badge
+- [x] Create `packages/ui/src/rich-text-editor.tsx` - Markdown editor with toolbar
+- [x] Create `packages/ui/src/video-player.tsx` - Video playback component (YouTube, Vimeo, Mux, native)
+- [x] Create `packages/ui/src/file-upload.tsx` - File upload with preview and drag-drop
+- [x] Create `packages/ui/src/community-avatar.tsx` - Community branding
+- [x] Create `packages/ui/src/member-avatar.tsx` - Member with level badge
 - [x] Create post-card component (in Next.js app)
 - [x] Create course-card component (in Next.js app)
 - [x] Create lesson navigation (in Next.js app)
@@ -190,7 +190,7 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 - [x] Create `apps/nextjs/src/app/c/[slug]/courses/[courseId]/page.tsx` - Course view
 - [x] Create `apps/nextjs/src/app/c/[slug]/courses/[courseId]/[lessonId]/page.tsx` - Lesson view
 - [x] Create `apps/nextjs/src/app/c/[slug]/leaderboard/page.tsx` - Gamification leaderboard
-- [ ] Create `apps/nextjs/src/app/c/[slug]/profile/page.tsx` - Member profile
+- [x] Create `apps/nextjs/src/app/c/[slug]/profile/page.tsx` - Member profile
 
 ### 5.2 Community Components
 - [x] Create `apps/nextjs/src/app/c/_components/community-sidebar.tsx`
@@ -210,8 +210,8 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 - [x] Create `apps/nextjs/src/app/admin/communities/page.tsx` - Community list
 - [x] Create `apps/nextjs/src/app/admin/communities/new/page.tsx` - Create community
 - [x] Create `apps/nextjs/src/app/admin/communities/[id]/page.tsx` - Community settings
-- [ ] Create `apps/nextjs/src/app/admin/communities/[id]/members/page.tsx` - Member management
-- [ ] Create `apps/nextjs/src/app/admin/communities/[id]/analytics/page.tsx` - Analytics dashboard
+- [x] Create `apps/nextjs/src/app/admin/communities/[id]/members/page.tsx` - Member management
+- [x] Create `apps/nextjs/src/app/admin/communities/[id]/analytics/page.tsx` - Analytics dashboard
 - [x] Create `apps/nextjs/src/app/admin/courses/page.tsx` - Course list
 - [x] Create `apps/nextjs/src/app/admin/courses/new/page.tsx` - Create course
 - [x] Create `apps/nextjs/src/app/admin/courses/[courseId]/page.tsx` - Course editor
@@ -229,9 +229,9 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 - [x] Create `apps/nextjs/src/app/api/ghl/sso/route.ts` - GHL SSO validation
 
 ### 5.6 File Upload Routes
-- [ ] Create `apps/nextjs/src/app/api/upload/image/route.ts` - Image upload
-- [ ] Create `apps/nextjs/src/app/api/upload/video/route.ts` - Video upload
-- [ ] Create `apps/nextjs/src/app/api/upload/audio/route.ts` - Voice note upload
+- [x] Create `apps/nextjs/src/app/api/upload/image/route.ts` - Image upload
+- [x] Create `apps/nextjs/src/app/api/upload/video/route.ts` - Video upload
+- [x] Create `apps/nextjs/src/app/api/upload/audio/route.ts` - Voice note upload
 
 ---
 
@@ -323,10 +323,11 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 
 ## Architecture Decisions
 
-### Storage
-- **Voice Notes**: Vercel Blob (audio files)
-- **Images**: Vercel Blob (with optimization)
-- **Videos**: Mux (for courses) or Vercel Blob (for posts)
+### Storage (Migrating to Supabase S3)
+- **Voice Notes**: Supabase Storage `audio` bucket
+- **Images**: Supabase Storage `images` bucket (with transformation)
+- **Videos**: Supabase Storage `videos` bucket or Mux (for courses)
+- **Fallback**: Vercel Blob (legacy support during migration)
 
 ### Authentication
 - **Standalone Users**: Discord OAuth via Better Auth
@@ -349,13 +350,57 @@ Multi-tenant architecture where each GHL Location maps to a Community with socia
 ## Current Status
 
 **Phase 1**: ✅ Schema Complete (need db:push)
-**Phase 2**: 🔄 Partial (middleware done, SSO route done)
+**Phase 2**: ✅ Complete (all procedures created)
 **Phase 3**: ✅ Complete (all 12 routers created)
-**Phase 4**: 🔄 Partial (inline components, need shadcn-ui)
-**Phase 5**: ✅ Complete (all community pages + admin dashboard)
+**Phase 4**: ✅ Complete (all shadcn-ui + custom components)
+**Phase 5**: ✅ Complete (all community pages + admin dashboard + file uploads)
 **Phase 6**: ✅ Complete (all tabs + screens)
 **Phase 7**: ⏳ Not Started (testing & polish)
 **Phase 8**: ⏳ Not Started (deployment)
+
+---
+
+## Phase 9: Supabase S3 Storage Migration
+
+### 9.1 Supabase Storage Setup
+- [ ] Create Supabase storage bucket for `images`
+- [ ] Create Supabase storage bucket for `videos`
+- [ ] Create Supabase storage bucket for `audio` (voice notes)
+- [ ] Configure bucket policies (public read, authenticated write)
+- [ ] Set up RLS policies for file access
+
+### 9.2 Environment Variables
+- [x] Add Supabase S3 env vars to `apps/nextjs/src/env.ts`:
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] Add Supabase env vars to `.env.example`
+- [x] Keep Vercel Blob env vars as optional fallback
+
+### 9.3 Storage Utility Package
+- [x] Create `packages/storage/` package
+- [x] Create `packages/storage/src/client.ts` - Supabase storage client
+- [x] Create `packages/storage/src/upload.ts` - Upload utilities
+- [x] Create `packages/storage/src/signed-url.ts` - Signed URL generation
+- [x] Create `packages/storage/src/index.ts` - Exports
+
+### 9.4 Migrate Upload Routes
+- [x] Update `apps/nextjs/src/app/api/upload/image/route.ts` - Use Supabase S3
+- [x] Update `apps/nextjs/src/app/api/upload/video/route.ts` - Use Supabase S3
+- [x] Update `apps/nextjs/src/app/api/upload/audio/route.ts` - Use Supabase S3
+- [x] Add presigned URL endpoint for direct uploads
+
+### 9.5 File Upload Component Updates
+- [ ] Update `packages/ui/src/file-upload.tsx` to support presigned URLs
+- [ ] Add progress tracking for large file uploads
+- [ ] Add resumable upload support for videos
+
+### 9.6 Expo Mobile Integration
+- [x] Create `apps/expo/src/utils/supabase-storage.ts`
+- [ ] Update mobile file upload utilities
+- [ ] Test image uploads from mobile
+- [ ] Test voice note uploads from mobile
 
 ---
 

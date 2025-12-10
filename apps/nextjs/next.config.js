@@ -12,6 +12,7 @@ const config = {
     "@ogm/api",
     "@ogm/auth",
     "@ogm/db",
+    "@ogm/storage",
     "@ogm/ui",
     "@ogm/validators",
   ],

@@ -6,3 +6,11 @@ export const unused = z.string().describe(
    with back and frontend, you can put them in here
   `,
 );
+
+// Re-export all validators
+export * from "./channel";
+export * from "./comment";
+export * from "./community";
+export * from "./course";
+export * from "./member";
+export * from "./post";

@@ -16,6 +16,7 @@
     "@ogm/api": "workspace:*",
     "@ogm/auth": "workspace:*",
     "@ogm/db": "workspace:*",
+    "@ogm/storage": "workspace:*",
     "@ogm/ui": "workspace:*",
     "@ogm/validators": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.8",

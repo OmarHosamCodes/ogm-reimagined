@@ -1,0 +1,28 @@
+{
+  "name": "@ogm/storage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./src/client.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  },
+  "devDependencies": {
+    "@ogm/tsconfig": "workspace:*",
+    "typescript": "catalog:default"
+  }
+}

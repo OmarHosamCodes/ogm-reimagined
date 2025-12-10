@@ -207,6 +207,28 @@ export const moderatorProcedure = memberProcedure.use(({ ctx, next }) => {
 });
 
 /**
+ * Owner procedure
+ *
+ * Requires authentication AND owner role in the community.
+ * The communityId must be provided in the input.
+ */
+export const ownerProcedure = memberProcedure.use(({ ctx, next }) => {
+  if (ctx.member.role !== "owner") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Owner access required",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      isOwner: true,
+    },
+  });
+});
+
+/**
  * Helper: Check if member has access to a private channel based on GHL tags
  */
 export async function checkChannelAccess(
