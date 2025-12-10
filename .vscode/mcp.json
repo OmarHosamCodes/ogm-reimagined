@@ -1,8 +1,12 @@
 {
 	"servers": {
-		"supabase": {
-			"type": "http",
-			"url": "https://kong-production-090e.up.railway.app/mcp"
+		"supabase-db": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-postgres",
+				"postgresql://supabase_admin:b3b14fpxrmsovn2ofgeyuuylx7wi6n6j6ra2d0cyb6eux8o2md5lr06djzo6xqda@ballast.proxy.rlwy.net:45910/postgres"
+			]
 		}
 	},
 	"inputs": []

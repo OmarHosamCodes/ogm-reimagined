@@ -11,7 +11,9 @@ import superjson from "superjson";
 import { ZodError, z } from "zod/v4";
 
 import type { Auth } from "@ogm/auth";
+import { and, eq } from "@ogm/db";
 import { db } from "@ogm/db/client";
+import { channels, courses, members } from "@ogm/db/schema";
 
 /**
  * 1. CONTEXT
@@ -126,3 +128,161 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Member procedure
+ *
+ * Requires authentication AND membership in a specific community.
+ * The communityId must be provided in the input.
+ * Adds `member` to the context with the user's membership info.
+ */
+export const memberProcedure = protectedProcedure
+  .input(z.object({ communityId: z.string().uuid() }))
+  .use(async ({ ctx, input, next }) => {
+    const member = await ctx.db.query.members.findFirst({
+      where: and(
+        eq(members.userId, ctx.session.user.id),
+        eq(members.communityId, input.communityId),
+      ),
+    });
+
+    if (!member) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not a member of this community",
+      });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        member,
+        communityId: input.communityId,
+      },
+    });
+  });
+
+/**
+ * Admin procedure
+ *
+ * Requires authentication AND admin/owner role in the community.
+ * The communityId must be provided in the input.
+ */
+export const adminProcedure = memberProcedure.use(({ ctx, next }) => {
+  if (!["owner", "admin"].includes(ctx.member.role ?? "")) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      isAdmin: true,
+    },
+  });
+});
+
+/**
+ * Moderator procedure
+ *
+ * Requires authentication AND moderator/admin/owner role in the community.
+ * The communityId must be provided in the input.
+ */
+export const moderatorProcedure = memberProcedure.use(({ ctx, next }) => {
+  if (!["owner", "admin", "moderator"].includes(ctx.member.role ?? "")) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Moderator access required",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      isModerator: true,
+    },
+  });
+});
+
+/**
+ * Helper: Check if member has access to a private channel based on GHL tags
+ */
+export async function checkChannelAccess(
+  db: typeof import("@ogm/db/client").db,
+  member: { role: string | null; ghlTags: unknown },
+  channelId: string,
+): Promise<boolean> {
+  // Admins and moderators have access to all channels
+  if (["owner", "admin", "moderator"].includes(member.role ?? "")) {
+    return true;
+  }
+
+  const channel = await db.query.channels.findFirst({
+    where: eq(channels.id, channelId),
+  });
+
+  if (!channel) {
+    return false;
+  }
+
+  // Public channels are accessible to all members
+  if (!channel.isPrivate) {
+    return true;
+  }
+
+  // Check GHL tag requirements
+  const requiredTags = (channel.requiredGhlTags as string[]) ?? [];
+  if (requiredTags.length === 0) {
+    return true;
+  }
+
+  const memberTags = (member.ghlTags as string[]) ?? [];
+  return requiredTags.some((tag) => memberTags.includes(tag));
+}
+
+/**
+ * Helper: Check if member has access to a course based on unlock conditions
+ */
+export async function checkCourseAccess(
+  db: typeof import("@ogm/db/client").db,
+  member: { role: string | null; ghlTags: unknown; level: number | null },
+  courseId: string,
+): Promise<boolean> {
+  // Admins have access to all courses
+  if (["owner", "admin"].includes(member.role ?? "")) {
+    return true;
+  }
+
+  const course = await db.query.courses.findFirst({
+    where: eq(courses.id, courseId),
+  });
+
+  if (!course) {
+    return false;
+  }
+
+  // No unlock requirements
+  if (!course.unlockGhlTag && !course.unlockLevel) {
+    return true;
+  }
+
+  // Check GHL tag unlock
+  if (course.unlockGhlTag) {
+    const memberTags = (member.ghlTags as string[]) ?? [];
+    if (memberTags.includes(course.unlockGhlTag)) {
+      return true;
+    }
+  }
+
+  // Check level unlock
+  if (course.unlockLevel) {
+    const memberLevel = member.level ?? 1;
+    if (memberLevel >= course.unlockLevel) {
+      return true;
+    }
+  }
+
+  return false;
+}
