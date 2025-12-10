@@ -89,6 +89,3 @@ export const config = {
     bodyParser: false,
   },
 };
-    bodyParser: false,
-  },
-};

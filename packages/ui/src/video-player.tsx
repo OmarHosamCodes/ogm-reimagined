@@ -3,7 +3,8 @@
 import * as React from "react";
 import { cn } from "./index";
 
-interface VideoPlayerProps extends React.HTMLAttributes<HTMLDivElement> {
+interface VideoPlayerProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onProgress"> {
   src: string;
   poster?: string;
   title?: string;
@@ -13,7 +14,7 @@ interface VideoPlayerProps extends React.HTMLAttributes<HTMLDivElement> {
   controls?: boolean;
   loop?: boolean;
   onEnded?: () => void;
-  onTimeUpdate?: (currentTime: number, duration: number) => void;
+  onProgress?: (currentTime: number, duration: number) => void;
   onPlay?: () => void;
   onPause?: () => void;
 }
@@ -41,7 +42,7 @@ function getVideoType(src: string): "youtube" | "vimeo" | "mux" | "native" {
 function getYouTubeEmbedUrl(url: string): string {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
-  const videoId = match && match[2].length === 11 ? match[2] : null;
+  const videoId = match && match[2]?.length === 11 ? match[2] : null;
   return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
 }
 
@@ -62,7 +63,7 @@ export function VideoPlayer({
   controls = true,
   loop = false,
   onEnded,
-  onTimeUpdate,
+  onProgress,
   onPlay,
   onPause,
   className,
@@ -72,8 +73,8 @@ export function VideoPlayer({
   const videoType = getVideoType(src);
 
   const handleTimeUpdate = () => {
-    if (videoRef.current && onTimeUpdate) {
-      onTimeUpdate(videoRef.current.currentTime, videoRef.current.duration);
+    if (videoRef.current && onProgress) {
+      onProgress(videoRef.current.currentTime, videoRef.current.duration);
     }
   };
 

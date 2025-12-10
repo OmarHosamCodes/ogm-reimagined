@@ -7,7 +7,7 @@ import { Textarea } from "./textarea";
 
 interface RichTextEditorProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
-  onChange: (value: string) => void;
+  onValueChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
   minHeight?: string;
@@ -21,7 +21,7 @@ interface RichTextEditorProps extends React.HTMLAttributes<HTMLDivElement> {
  */
 export function RichTextEditor({
   value,
-  onChange,
+  onValueChange,
   placeholder = "Write something...",
   disabled = false,
   minHeight = "150px",
@@ -46,7 +46,7 @@ export function RichTextEditor({
       after +
       value.substring(end);
 
-    onChange(newText);
+    onValueChange(newText);
 
     // Restore cursor position
     setTimeout(() => {
@@ -110,7 +110,7 @@ export function RichTextEditor({
       <Textarea
         ref={textareaRef}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onValueChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
         className="resize-none font-mono text-sm"

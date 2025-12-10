@@ -9,7 +9,7 @@ interface MemberAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
   imageUrl?: string | null;
   level?: number | null;
-  role?: "owner" | "admin" | "moderator" | "member" | null;
+  memberRole?: "owner" | "admin" | "moderator" | "member" | null;
   size?: "sm" | "md" | "lg" | "xl";
   showLevel?: boolean;
   showRole?: boolean;
@@ -33,7 +33,7 @@ export function MemberAvatar({
   name,
   imageUrl,
   level,
-  role,
+  memberRole,
   size = "md",
   showLevel = false,
   showRole = false,
@@ -63,13 +63,13 @@ export function MemberAvatar({
         </Badge>
       )}
 
-      {showRole && role && role !== "member" && (
+      {showRole && memberRole && memberRole !== "member" && (
         <span
           className={cn(
             "absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background",
-            roleColors[role] || roleColors.member,
+            roleColors[memberRole] || roleColors.member,
           )}
-          title={role}
+          title={memberRole}
         />
       )}
     </div>
