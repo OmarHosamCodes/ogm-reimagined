@@ -26,9 +26,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@turbo/gen": "^2.5.8",
+    "@turbo/gen": "^2.6.3",
     "dotenv-cli": "^10.0.0",
-    "turbo": "^2.5.8",
+    "turbo": "^2.6.3",
     "typescript": "catalog:"
   }
 }

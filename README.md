@@ -1,286 +1,738 @@
-# create-t3-turbo
+<div align="center">
+  <h1>🚀 OGM Platform</h1>
+  <p><strong>Multi-Tenant LMS & Social Platform with GoHighLevel Integration</strong></p>
+  <p>
+    <a href="#-overview">Overview</a> •
+    <a href="#-quick-start">Quick Start</a> •
+    <a href="#-architecture">Architecture</a> •
+    <a href="#-tech-stack">Tech Stack</a> •
+    <a href="#-development">Development</a> •
+    <a href="#-deployment">Deployment</a>
+  </p>
+</div>
 
-> [!NOTE]
->
-> create-t3-turbo now includes the option to use Tanstack Start for the web app!
+---
 
-## Installation
+## 📖 Overview
 
-> [!NOTE]
->
-> Make sure to follow the system requirements specified in [`package.json#engines`](./package.json#L4) before proceeding.
+A comprehensive **multi-tenant learning management system (LMS)** and **social platform** built with modern TypeScript tooling. Seamlessly integrates with **GoHighLevel** for CRM and identity management, delivering a unified experience across web, mobile, and API surfaces.
 
-There are two ways of initializing an app using the `create-t3-turbo` starter. You can either use this repository as a template:
+### 🎯 Core Engines
 
-![use-as-template](https://github.com/t3-oss/create-t3-turbo/assets/51714798/bb6c2e5d-d8b6-416e-aeb3-b3e50e2ca994)
+- **Community Engine** – Multi-tenant workspaces mapped to GHL Locations with role-based access control
+- **Social Engine** – Forum-style discussions with channel-based organization and tag-driven permissions
+- **LMS Engine** – Full-featured course delivery with progress tracking and video hosting
 
-or use Turbo's CLI to init your project (use PNPM as package manager):
+### ✨ What Makes This Special
 
-```bash
-npx create-turbo@latest -e https://github.com/t3-oss/create-t3-turbo
-```
+- **Type-Safe Monorepo** – Turborepo orchestrates shared packages across Next.js, Expo, and TanStack Start
+- **End-to-End Type Safety** – tRPC v11 powers full-stack type inference from database to UI
+- **Multi-Platform** – Same backend logic serves web (Next.js/TanStack Start), iOS, and Android (Expo)
+- **GoHighLevel Native** – Deep CRM integration with OAuth, webhooks, and contact synchronization
+- **Modern DX** – Biome for linting/formatting, pnpm workspace with catalog versioning, React 19
 
-## About
+---
 
-Ever wondered how to migrate your T3 application into a monorepo? Stop right here! This is the perfect starter repo to get you running with the perfect stack!
+## 🏗️ Architecture
 
-It uses [Turborepo](https://turborepo.com) and contains:
+## 🏗️ Architecture
+
+### Monorepo Structure
 
 ```text
-.github
-  └─ workflows
-        └─ CI with pnpm cache setup
-.vscode
-  └─ Recommended extensions and settings for VSCode users
-apps
-  ├─ expo
-  │   ├─ Expo SDK 54
-  │   ├─ React Native 0.81 using React 19
-  │   ├─ Navigation using Expo Router
-  │   ├─ Tailwind CSS v4 using NativeWind v5
-  │   └─ Typesafe API calls using tRPC
-  ├─ nextjs
-  │   ├─ Next.js 15
-  │   ├─ React 19
-  │   ├─ Tailwind CSS v4
-  │   └─ E2E Typesafe API Server & Client
-  └─ tanstack-start
-      ├─ Tanstack Start v1 (rc)
-      ├─ React 19
-      ├─ Tailwind CSS v4
-      └─ E2E Typesafe API Server & Client
-packages
-  ├─ api
-  │   └─ tRPC v11 router definition
-  ├─ auth
-  │   └─ Authentication using better-auth.
-  ├─ db
-  │   └─ Typesafe db calls using Drizzle & Supabase
-  └─ ui
-      └─ Start of a UI package for the webapp using shadcn-ui
-tooling
-  ├─ eslint
-  │   └─ shared, fine-grained, eslint presets
-  ├─ prettier
-  │   └─ shared prettier configuration
-  ├─ tailwind
-  │   └─ shared tailwind theme and configuration
-  └─ typescript
-      └─ shared tsconfig you can extend from
+ogm/
+├── apps/                          # Frontend applications
+│   ├── nextjs/                    # Next.js 15 (React Server Components)
+│   ├── expo/                      # React Native (iOS & Android)
+│   └── tanstack-start/            # TanStack Start (Alternative web)
+│
+├── packages/                      # Shared business logic
+│   ├── @ogm/api/                  # tRPC v11 router definitions
+│   ├── @ogm/auth/                 # Better Auth integration
+│   ├── @ogm/db/                   # Drizzle ORM + Supabase Postgres
+│   ├── @ogm/storage/              # Supabase Storage client
+│   ├── @ogm/ui/                   # shadcn-ui + Tailwind v4
+│   └── @ogm/validators/           # Zod v4 schemas
+│
+└── tooling/                       # Shared configurations
+    ├── tailwind/                  # Tailwind theme & PostCSS
+    ├── typescript/                # Shared TSConfig
+    └── github/                    # CI/CD workflows
 ```
 
-> In this template, we use `@acme` as a placeholder for package names. As a user, you might want to replace it with your own organization or project name. You can use find-and-replace to change all the instances of `@acme` to something like `@my-company` or `@project-name`.
+### Domain Model
 
-## Quick Start
+#### Multi-Tenancy
 
-> **Note**
-> The [db](./packages/db) package is preconfigured to use Supabase and is **edge-bound** with the [Vercel Postgres](https://github.com/vercel/storage/tree/main/packages/postgres) driver. If you're using something else, make the necessary modifications to the [schema](./packages/db/src/schema.ts) as well as the [client](./packages/db/src/index.ts) and the [drizzle config](./packages/db/drizzle.config.ts). If you want to switch to non-edge database driver, remove `export const runtime = "edge";` [from all pages and api routes](https://github.com/t3-oss/create-t3-turbo/issues/634#issuecomment-1730240214).
+Communities are the top-level tenant. Each community:
+- Maps to a **GoHighLevel Location** (`ghlLocationId`)
+- Has members with roles: `owner`, `admin`, `moderator`, `member`
+- Controls access to channels via GHL tag matching
 
-To get it running, follow the steps below:
+#### Data Flow
 
-### 1. Setup dependencies
+```
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+│   Apps      │─────▶│  tRPC API    │─────▶│  Database   │
+│ (Type-safe) │◀─────│ (@ogm/api)   │◀─────│  (Drizzle)  │
+└─────────────┘      └──────────────┘      └─────────────┘
+       │                     │                      │
+       │                     │                      │
+       ▼                     ▼                      ▼
+  Better Auth         Authorization           GoHighLevel
+   (Session)         (memberProcedure)         (Webhooks)
+```
 
-> [!NOTE]
->
-> While the repo does contain both a Next.js and Tanstack Start version of a web app, you can pick which one you like to use and delete the other folder before starting the setup.
+### Custom tRPC Procedures
+
+Authorization is enforced at the procedure level:
+
+| Procedure | Auth | Community | Role Required | Use Case |
+|-----------|------|-----------|---------------|----------|
+| `publicProcedure` | ❌ | ❌ | None | Public endpoints |
+| `protectedProcedure` | ✅ | ❌ | Authenticated | User-scoped |
+| `memberProcedure` | ✅ | ✅ | Member+ | Community access |
+| `moderatorProcedure` | ✅ | ✅ | Moderator+ | Content moderation |
+| `adminProcedure` | ✅ | ✅ | Admin+ | Community settings |
+| `ownerProcedure` | ✅ | ✅ | Owner | Billing, deletion |
+
+---
+
+## 💻 Tech Stack
+
+### Frontend
+
+- **React 19** – Latest React with concurrent features
+- **Next.js 15** – React Server Components, App Router
+- **Expo SDK 54** – Cross-platform mobile (iOS/Android)
+- **TanStack Start** – Full-stack React framework (alternative to Next.js)
+- **Tailwind CSS v4** – Utility-first styling (NativeWind v5 for Expo)
+
+### Backend
+
+- **tRPC v11** – End-to-end type-safe APIs
+- **Better Auth** – Authentication with OAuth & SSO
+- **Drizzle ORM** – Type-safe SQL query builder
+- **Supabase** – Postgres database (Vercel Postgres driver for edge)
+- **Supabase Storage** – File uploads & CDN
+
+### DevOps & Tooling
+
+- **Turborepo** – High-performance build system
+- **pnpm** – Fast, disk-space efficient package manager
+- **Biome** – All-in-one linter & formatter (replaces ESLint + Prettier)
+- **TypeScript** – Strict type checking across all packages
+- **Zod v4** – Runtime schema validation
+
+### Integrations
+
+- **GoHighLevel** – CRM, OAuth, contact sync via webhooks
+- **Vercel** – Deployment for Next.js (edge runtime)
+- **EAS** – Expo Application Services for mobile builds
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+Ensure you have the required versions:
 
 ```bash
-# Install dependencies
-pnpm i
+node --version  # Should be ^22.21.0
+pnpm --version  # Should be ^10.19.0
+```
 
-# Configure environment variables
-# There is an `.env.example` in the root directory you can use for reference
+### Installation
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone <your-repo-url>
+cd ogm
+
+# 2. Install dependencies
+pnpm install
+
+# 3. Set up environment variables
 cp .env.example .env
+# Edit .env with your credentials (Supabase, GHL, etc.)
 
-# Push the Drizzle schema to the database
+# 4. Generate Better Auth schema
+pnpm auth:generate
+
+# 5. Push database schema
 pnpm db:push
+
+# 6. Start development servers (all apps in watch mode)
+pnpm dev
 ```
 
-### 2. Generate Better Auth Schema
+### Environment Variables
 
-This project uses [Better Auth](https://www.better-auth.com) for authentication. The auth schema needs to be generated using the Better Auth CLI before you can use the authentication features.
+Create a `.env` file with these required variables:
 
 ```bash
-# Generate the Better Auth schema
-pnpm --filter @acme/auth generate
+# Database (Supabase)
+POSTGRES_URL="postgresql://..."           # Standard connection
+POSTGRES_URL_NON_POOLING="postgresql://..." # For migrations
+
+# Supabase Storage
+SUPABASE_URL="https://xxx.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGc..."
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGc..."
+
+# Better Auth
+BETTER_AUTH_SECRET="<generate-with-openssl-rand>"
+BETTER_AUTH_URL="http://localhost:3000"   # Your deployed URL in production
+
+# GoHighLevel
+GHL_CLIENT_ID="xxx"
+GHL_CLIENT_SECRET="xxx"
+GHL_REDIRECT_URI="http://localhost:3000/api/auth/ghl/callback"
 ```
 
-This command runs the Better Auth CLI with the following configuration:
-
-- **Config file**: `packages/auth/script/auth-cli.ts` - A CLI-only configuration file (isolated from src to prevent imports)
-- **Output**: `packages/db/src/auth-schema.ts` - Generated Drizzle schema for authentication tables
-
-The generation process:
-
-1. Reads the Better Auth configuration from `packages/auth/script/auth-cli.ts`
-2. Generates the appropriate database schema based on your auth setup
-3. Outputs a Drizzle-compatible schema file to the `@acme/db` package
-
-> **Note**: The `auth-cli.ts` file is placed in the `script/` directory (instead of `src/`) to prevent accidental imports from other parts of the codebase. This file is exclusively for CLI schema generation and should **not** be used directly in your application. For runtime authentication, use the configuration from `packages/auth/src/index.ts`.
-
-For more information about the Better Auth CLI, see the [official documentation](https://www.better-auth.com/docs/concepts/cli#generate).
-
-### 3. Configure Expo `dev`-script
-
-#### Use iOS Simulator
-
-1. Make sure you have XCode and XCommand Line Tools installed [as shown on expo docs](https://docs.expo.dev/workflow/ios-simulator).
-
-   > **NOTE:** If you just installed XCode, or if you have updated it, you need to open the simulator manually once. Run `npx expo start` from `apps/expo`, and then enter `I` to launch Expo Go. After the manual launch, you can run `pnpm dev` in the root directory.
-
-   ```diff
-   +  "dev": "expo start --ios",
-   ```
-
-2. Run `pnpm dev` at the project root folder.
-
-#### Use Android Emulator
-
-1. Install Android Studio tools [as shown on expo docs](https://docs.expo.dev/workflow/android-studio-emulator).
-
-2. Change the `dev` script at `apps/expo/package.json` to open the Android emulator.
-
-   ```diff
-   +  "dev": "expo start --android",
-   ```
-
-3. Run `pnpm dev` at the project root folder.
-
-### 4. Configuring Better-Auth to work with Expo
-
-In order to get Better-Auth to work with Expo, you must either:
-
-#### Deploy the Auth Proxy (RECOMMENDED)
-
-Better-auth comes with an [auth proxy plugin](https://www.better-auth.com/docs/plugins/oauth-proxy). By deploying the Next.js app, you can get OAuth working in preview deployments and development for Expo apps.
-
-By using the proxy plugin, the Next.js apps will forward any auth requests to the proxy server, which will handle the OAuth flow and then redirect back to the Next.js app. This makes it easy to get OAuth working since you'll have a stable URL that is publicly accessible and doesn't change for every deployment and doesn't rely on what port the app is running on. So if port 3000 is taken and your Next.js app starts at port 3001 instead, your auth should still work without having to reconfigure the OAuth provider.
-
-#### Add your local IP to your OAuth provider
-
-You can alternatively add your local IP (e.g. `192.168.x.y:$PORT`) to your OAuth provider. This may not be as reliable as your local IP may change when you change networks. Some OAuth providers may also only support a single callback URL for each app making this approach unviable for some providers (e.g. GitHub).
-
-### 5a. When it's time to add a new UI component
-
-Run the `ui-add` script to add a new UI component using the interactive `shadcn/ui` CLI:
+### Development Commands
 
 ```bash
+# Start all apps in watch mode
+pnpm dev
+
+# Start only Next.js app + dependencies
+pnpm dev:next
+
+# Build all packages and apps
+pnpm build
+
+# Lint with Biome
+pnpm check
+
+# Format with Biome
+pnpm format
+
+# Type-check all packages
+pnpm typecheck
+
+# Database management
+pnpm db:push      # Push schema changes
+pnpm db:studio    # Open Drizzle Studio
+
+# Add shadcn-ui component
 pnpm ui-add
 ```
 
-When the component(s) has been installed, you should be good to go and start using it in your app.
+---
 
-### 5b. When it's time to add a new package
+## 🔧 Development
 
-To add a new package, simply run `pnpm turbo gen init` in the monorepo root. This will prompt you for a package name as well as if you want to install any dependencies to the new package (of course you can also do this yourself later).
+### Adding a New tRPC Endpoint
 
-The generator sets up the `package.json`, `tsconfig.json` and a `index.ts`, as well as configures all the necessary configurations for tooling around your package such as formatting, linting and typechecking. When the package is created, you're ready to go build out the package.
+1. **Define the router** in `packages/api/src/router/`:
 
-## FAQ
+```typescript
+// packages/api/src/router/posts.ts
+import { z } from "zod";
+import { createTRPCRouter, memberProcedure } from "../trpc";
 
-### Does the starter include Solito?
+export const postRouter = createTRPCRouter({
+  create: memberProcedure
+    .input(z.object({
+      communityId: z.string().uuid(),
+      title: z.string(),
+      content: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // ctx.member is automatically populated with role info
+      return ctx.db.insert(schema.posts).values({
+        ...input,
+        authorId: ctx.session.user.id,
+      });
+    }),
+});
+```
 
-No. Solito will not be included in this repo. It is a great tool if you want to share code between your Next.js and Expo app. However, the main purpose of this repo is not the integration between Next.js and Expo — it's the code splitting of your T3 App into a monorepo. The Expo app is just a bonus example of how you can utilize the monorepo with multiple apps but can just as well be any app such as Vite, Electron, etc.
+2. **Export from root router** in `packages/api/src/root.ts`:
 
-Integrating Solito into this repo isn't hard, and there are a few [official templates](https://github.com/nandorojo/solito/tree/master/example-monorepos) by the creators of Solito that you can use as a reference.
+```typescript
+import { postRouter } from "./router/posts";
 
-### Does this pattern leak backend code to my client applications?
+export const appRouter = createTRPCRouter({
+  post: postRouter,
+  // ... other routers
+});
+```
 
-No, it does not. The `api` package should only be a production dependency in the Next.js application where it's served. The Expo app, and all other apps you may add in the future, should only add the `api` package as a dev dependency. This lets you have full typesafety in your client applications, while keeping your backend code safe.
+3. **Use in clients** – types propagate automatically:
 
-If you need to share runtime code between the client and server, such as input validation schemas, you can create a separate `shared` package for this and import it on both sides.
+```typescript
+// Next.js (Server Component)
+const posts = await trpc.post.create({ communityId, title, content });
 
-## Deployment
+// Client Component or Expo
+const mutation = trpc.post.create.useMutation();
+```
 
-### Next.js
+### Adding a Database Table
 
-#### Prerequisites
+1. **Define schema** in `packages/db/src/schema.ts`:
 
-> **Note**
-> Please note that the Next.js application with tRPC must be deployed in order for the Expo app to communicate with the server in a production environment.
+```typescript
+export const posts = pgTable("posts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  communityId: uuid("community_id").notNull().references(() => communities.id),
+  authorId: text("author_id").notNull().references(() => user.id),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
 
-#### Deploy to Vercel
+2. **Push to database**:
 
-Let's deploy the Next.js application to [Vercel](https://vercel.com). If you've never deployed a Turborepo app there, don't worry, the steps are quite straightforward. You can also read the [official Turborepo guide](https://vercel.com/docs/concepts/monorepos/turborepo) on deploying to Vercel.
+```bash
+pnpm db:push
+```
 
-1. Create a new project on Vercel, select the `apps/nextjs` folder as the root directory. Vercel's zero-config system should handle all configurations for you.
+3. **Use in tRPC procedures**:
 
-2. Add your `POSTGRES_URL` environment variable.
+```typescript
+const result = await ctx.db.query.posts.findMany({
+  where: eq(posts.communityId, input.communityId),
+});
+```
 
-3. Done! Your app should successfully deploy. Assign your domain and use that instead of `localhost` for the `url` in the Expo app so that your Expo app can communicate with your backend when you are not in development.
+### Adding a UI Component
 
-### Auth Proxy
+**Option 1: Use shadcn-ui CLI (recommended)**
 
-The auth proxy comes as a better-auth plugin. This is required for the Next.js app to be able to authenticate users in preview deployments. The auth proxy is not used for OAuth request in production deployments. The easiest way to get it running is to deploy the Next.js app to vercel.
+```bash
+pnpm ui-add
+# Select components interactively
+```
 
-### Expo
+**Option 2: Manual creation**
 
-Deploying your Expo application works slightly differently compared to Next.js on the web. Instead of "deploying" your app online, you need to submit production builds of your app to app stores, like [Apple App Store](https://www.apple.com/app-store) and [Google Play](https://play.google.com/store/apps). You can read the full [guide to distributing your app](https://docs.expo.dev/distribution/introduction), including best practices, in the Expo docs.
+1. Create in `packages/ui/src/my-component.tsx`
+2. Export from `packages/ui/src/index.ts`
+3. Use: `import { MyComponent } from "@ogm/ui"`
 
-1. Make sure to modify the `getBaseUrl` function to point to your backend's production URL:
+### GoHighLevel Integration
 
-   <https://github.com/t3-oss/create-t3-turbo/blob/656965aff7db271e5e080242c4a3ce4dad5d25f8/apps/expo/src/utils/api.tsx#L20-L37>
+#### OAuth Flow
 
-2. Let's start by setting up [EAS Build](https://docs.expo.dev/build/introduction), which is short for Expo Application Services. The build service helps you create builds of your app, without requiring a full native development setup. The commands below are a summary of [Creating your first build](https://docs.expo.dev/build/setup).
+```typescript
+// User clicks "Connect GHL" button
+// Redirect to GHL OAuth URL with your client_id
 
-   ```bash
-   # Install the EAS CLI
-   pnpm add -g eas-cli
+// On callback:
+const result = await trpc.ghl.exchangeCode.mutate({
+  code: searchParams.get("code"),
+  communityId,
+});
 
-   # Log in with your Expo account
-   eas login
+// Access token stored encrypted in communities.ghlAccessToken
+```
 
-   # Configure your Expo app
-   cd apps/expo
-   eas build:configure
+#### Webhook Handler
+
+```typescript
+// POST /api/ghl/webhook
+// GHL sends contact updates
+
+await trpc.ghl.syncContact.mutate({
+  ghlContactId: webhook.contact.id,
+  ghlLocationId: webhook.location.id,
+  email: webhook.contact.email,
+  // ... other fields
+});
+
+// Creates/updates user and member records
+```
+
+### File Uploads (Supabase Storage)
+
+**Server-side:**
+
+```typescript
+import { createStorageClient } from "@ogm/storage";
+
+const storage = createStorageClient(
+  env.SUPABASE_URL,
+  env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const { url } = await storage.upload({
+  bucket: "avatars",
+  path: `${userId}/profile.jpg`,
+  file: fileBuffer,
+});
+```
+
+**Client-side:**
+
+```typescript
+import { createPublicStorageClient } from "@ogm/storage/client";
+
+const storage = createPublicStorageClient(
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+```
+
+---
+
+## 📦 Package Management
+
+### Workspace Protocol
+
+Import shared packages using the `@ogm/*` namespace:
+
+```typescript
+import { db } from "@ogm/db/client";
+import { Button } from "@ogm/ui";
+import { createCourseSchema } from "@ogm/validators";
+```
+
+### Dependency Catalog
+
+Shared dependency versions are managed in `pnpm-workspace.yaml`:
+
+```yaml
+catalog:
+  "@trpc/server": "11.0.0-rc.653"
+  "react": "19.0.0"
+  "zod": "^4.0.0-beta.2"
+```
+
+Reference in `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@trpc/server": "catalog:",
+    "react": "catalog:react19"
+  }
+}
+```
+
+### Adding a New Package
+
+```bash
+pnpm turbo gen init
+# Follow prompts for package name and dependencies
+```
+
+This scaffolds:
+- `package.json` with correct metadata
+- `tsconfig.json` extending shared config
+- `src/index.ts` entry point
+- Biome and TypeScript configuration
+
+---
+
+## 🚢 Deployment
+
+### Next.js (Vercel)
+
+### Next.js (Vercel)
+
+**Prerequisites:** Deploy Next.js app first – required for Expo to communicate with backend.
+
+1. **Create Vercel project**
+   - Select `apps/nextjs` as root directory
+   - Vercel auto-detects Next.js configuration
+
+2. **Add environment variables** in Vercel dashboard:
+   ```
+   POSTGRES_URL
+   POSTGRES_URL_NON_POOLING
+   SUPABASE_URL
+   SUPABASE_SERVICE_ROLE_KEY
+   NEXT_PUBLIC_SUPABASE_ANON_KEY
+   BETTER_AUTH_SECRET
+   BETTER_AUTH_URL=https://your-domain.com
+   GHL_CLIENT_ID
+   GHL_CLIENT_SECRET
+   GHL_REDIRECT_URI
    ```
 
-3. After the initial setup, you can create your first build. You can build for Android and iOS platforms and use different [`eas.json` build profiles](https://docs.expo.dev/build-reference/eas-json) to create production builds or development, or test builds. Let's make a production build for iOS.
+3. **Deploy** – Push to `main` branch to trigger deployment
 
-   ```bash
-   eas build --platform ios --profile production
+4. **Update Expo** – Set production URL in `apps/expo/src/utils/api.tsx`:
+   ```typescript
+   const getBaseUrl = () => {
+     if (process.env.NODE_ENV === "development") {
+       return "http://localhost:3000";
+     }
+     return "https://your-domain.com"; // Your Vercel URL
+   };
    ```
 
-   > If you don't specify the `--profile` flag, EAS uses the `production` profile by default.
+### Better Auth Proxy (OAuth for Expo)
 
-4. Now that you have your first production build, you can submit this to the stores. [EAS Submit](https://docs.expo.dev/submit/introduction) can help you send the build to the stores.
+The auth proxy plugin enables OAuth in development and preview deployments:
 
+- **How it works:** Next.js forwards auth requests to a stable proxy URL
+- **Why:** Prevents OAuth callback issues when running on different ports
+- **Setup:** Already configured in `packages/auth/src/index.ts`
+
+Once Next.js is deployed, the proxy URL is your Vercel domain. No additional configuration needed.
+
+### Expo (EAS Build)
+
+1. **Install EAS CLI**
+
+```bash
+pnpm add -g eas-cli
+eas login
+```
+
+2. **Configure EAS**
+
+```bash
+cd apps/expo
+eas build:configure
+```
+
+3. **Create production build**
+
+```bash
+# iOS
+eas build --platform ios --profile production
+
+# Android
+eas build --platform android --profile production
+```
+
+4. **Submit to app stores**
+
+```bash
+eas submit --platform ios --latest
+eas submit --platform android --latest
+```
+
+5. **Enable OTA updates**
+
+```bash
+# Install expo-updates
+pnpm expo install expo-updates
+
+# Configure
+eas update:configure
+
+# Send update (after initial app store approval)
+eas update --auto
+```
+
+> **Note:** Native changes (new dependencies, config changes) require rebuilding and resubmitting to stores. JavaScript-only changes can use OTA updates.
+
+---
+
+## 🔐 Security Best Practices
+
+### Environment Variables
+
+- **Never commit `.env` files** – Use `.env.example` as template
+- **Strict validation** – All env vars validated via `env.ts` files with Zod
+- **Edge runtime** – Uses Vercel Postgres driver (`:6543` pooling) for edge compatibility
+
+### Authorization Pattern
+
+Always use appropriate procedures:
+
+```typescript
+// ❌ BAD: No authorization check
+export const deletePost = publicProcedure
+  .input(z.object({ postId: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(posts).where(eq(posts.id, input.postId));
+  });
+
+// ✅ GOOD: Proper authorization
+export const deletePost = memberProcedure
+  .input(z.object({ 
+    communityId: z.string().uuid(),
+    postId: z.string(),
+  }))
+  .mutation(async ({ ctx, input }) => {
+    // ctx.member is populated with role info
+    const post = await ctx.db.query.posts.findFirst({
+      where: eq(posts.id, input.postId),
+    });
+    
+    if (post.authorId !== ctx.session.user.id && 
+        !["admin", "owner"].includes(ctx.member.role)) {
+      throw new TRPCError({ code: "FORBIDDEN" });
+    }
+    
+    await ctx.db.delete(posts).where(eq(posts.id, input.postId));
+  });
+```
+
+### Database Security
+
+- **Row-level security** – Configure in Supabase for additional protection
+- **Service role key** – Only use server-side, never expose to clients
+- **Anon key** – Safe for client use, restricted by RLS policies
+
+---
+
+## 🧪 Testing & Quality
+
+### Code Quality Tools
+
+```bash
+# Lint all packages (Biome)
+pnpm check
+
+# Format all files
+pnpm format
+
+# Type-check entire monorepo
+pnpm typecheck
+
+# Check workspace consistency
+pnpm lint:ws
+```
+
+### Biome Configuration
+
+Configured in `biome.json`:
+- Line width: 80 characters
+- Quotes: Double
+- Semicolons: Required
+- Recommended rules + custom overrides
+
+**Suppress warnings:**
+
+```typescript
+// biome-ignore lint/suspicious/noExplicitAny: tRPC context inference
+const myFunction = (ctx: any) => { ... };
+```
+
+---
+
+## 📚 Key Concepts
+
+### Type Safety Flow
+
+```
+Database Schema (Drizzle)
+    ↓
+tRPC Router Input/Output (Zod)
+    ↓
+AppRouter Type Export
+    ↓
+Client Type Inference (React Query)
+    ↓
+UI Components (TypeScript)
+```
+
+**Result:** Change database schema → TypeScript errors appear in UI components
+
+### Multi-Tenancy Pattern
+
+Every community-scoped endpoint must:
+1. Accept `communityId` in input schema
+2. Use `memberProcedure` or higher
+3. Access `ctx.member` for role-based logic
+
+```typescript
+// Input schema extends communityId
+.input(z.object({
+  communityId: z.string().uuid(),
+  // ... other fields
+}))
+
+// Procedure ensures membership
+export const myEndpoint = memberProcedure
+  .input(communitySchema)
+  .mutation(async ({ ctx, input }) => {
+    // ctx.member.role is "owner" | "admin" | "moderator" | "member"
+    // ctx.member.communityId === input.communityId (validated)
+  });
+```
+
+### GHL Integration Architecture
+
+**Identity Flow:**
+1. User signs up → Better Auth creates `user` record
+2. GHL webhook fires → `syncContact` creates `member` record
+3. Member has `ghlContactId` + `ghlTags` for channel access
+
+**Data Sync:**
+- Communities: `ghlLocationId` + `ghlAccessToken` (encrypted)
+- Members: `ghlContactId` + `ghlTags` array
+- Channels: `ghlTags` array for access control
+
+---
+
+## 🤝 Contributing
+
+### Workflow
+
+1. Create feature branch from `main`
+2. Make changes in appropriate package
+3. Run quality checks:
    ```bash
-   eas submit --platform ios --latest
+   pnpm check && pnpm typecheck && pnpm build
    ```
+4. Commit with conventional commits format
+5. Open pull request
 
-   > You can also combine build and submit in a single command, using `eas build ... --auto-submit`.
+### Commit Convention
 
-5. Before you can get your app in the hands of your users, you'll have to provide additional information to the app stores. This includes screenshots, app information, privacy policies, etc. _While still in preview_, [EAS Metadata](https://docs.expo.dev/eas/metadata) can help you with most of this information.
+```
+feat: add course progress tracking
+fix: resolve member role permission check
+docs: update installation guide
+chore: bump dependencies
+```
 
-6. Once everything is approved, your users can finally enjoy your app. Let's say you spotted a small typo; you'll have to create a new build, submit it to the stores, and wait for approval before you can resolve this issue. In these cases, you can use EAS Update to quickly send a small bugfix to your users without going through this long process. Let's start by setting up EAS Update.
+---
 
-   The steps below summarize the [Getting started with EAS Update](https://docs.expo.dev/eas-update/getting-started/#configure-your-project) guide.
+## 📖 Additional Resources
 
-   ```bash
-   # Add the `expo-updates` library to your Expo app
-   cd apps/expo
-   pnpm expo install expo-updates
+### Documentation Links
 
-   # Configure EAS Update
-   eas update:configure
-   ```
+- [Turborepo](https://turbo.build/repo/docs) – Monorepo build system
+- [tRPC](https://trpc.io) – Type-safe API layer
+- [Drizzle ORM](https://orm.drizzle.team) – Database toolkit
+- [Better Auth](https://better-auth.com) – Authentication framework
+- [Next.js 15](https://nextjs.org/docs) – React framework
+- [Expo](https://docs.expo.dev) – React Native platform
+- [shadcn/ui](https://ui.shadcn.com) – Component library
+- [GoHighLevel API](https://highlevel.stoplight.io) – CRM integration
 
-7. Before we can send out updates to your app, you have to create a new build and submit it to the app stores. For every change that includes native APIs, you have to rebuild the app and submit the update to the app stores. See steps 2 and 3.
+### Monorepo Patterns
 
-8. Now that everything is ready for updates, let's create a new update for `production` builds. With the `--auto` flag, EAS Update uses your current git branch name and commit message for this update. See [How EAS Update works](https://docs.expo.dev/eas-update/how-eas-update-works/#publishing-an-update) for more information.
+This project follows the [T3 Turbo](https://github.com/t3-oss/create-t3-turbo) architecture with enhancements:
+- Custom tRPC procedures for authorization
+- GoHighLevel integration layer
+- Multi-tenant domain model
+- Shared validators and UI components
 
-   ```bash
-   cd apps/expo
-   eas update --auto
-   ```
+---
 
-   > Your OTA (Over The Air) updates must always follow the app store's rules. You can't change your app's primary functionality without getting app store approval. But this is a fast way to update your app for minor changes and bug fixes.
+## ⚖️ License
 
-9. Done! Now that you have created your production build, submitted it to the stores, and installed EAS Update, you are ready for anything!
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
 
-## References
+---
 
-The stack originates from [create-t3-app](https://github.com/t3-oss/create-t3-app).
+## 🙏 Acknowledgments
 
-A [blog post](https://jumr.dev/blog/t3-turbo) where I wrote how to migrate a T3 app into this.
+Built with inspiration from:
+- [create-t3-app](https://create.t3.gg) – T3 Stack foundation
+- [create-t3-turbo](https://github.com/t3-oss/create-t3-turbo) – Monorepo architecture
+- [Julius' Blog Post](https://jumr.dev/blog/t3-turbo) – Migration guide
+
+---
+
+<div align="center">
+  <p>Made with ❤️ by the OGM Team</p>
+  <p>
+    <a href="https://github.com/OmarHosamCodes/ogm-reimagined">⭐ Star on GitHub</a>
+  </p>
+</div>

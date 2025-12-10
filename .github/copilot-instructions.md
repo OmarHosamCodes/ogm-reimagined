@@ -9,9 +9,20 @@ This is a **Turborepo-based monorepo** with three distinct app layers and shared
   - `@ogm/api`: tRPC v11 router (defines all backend endpoints)
   - `@ogm/auth`: Better Auth integration (handles authentication across all apps)
   - `@ogm/db`: Drizzle ORM + Supabase (Vercel Postgres) schema definitions
+  - `@ogm/storage`: Supabase Storage client (file uploads/downloads)
   - `@ogm/ui`: shadcn-ui component library with Tailwind v4
   - `@ogm/validators`: Zod v4 schema validation
 - **Tooling** (`tooling/`): Shared Biome (linting/formatting), Tailwind, TypeScript configs
+
+### Domain Model: Multi-Tenant LMS + Social Platform
+
+The app is a **GoHighLevel (GHL) integrated multi-tenant platform** with three core engines:
+
+1. **Community Engine** (`communities`, `members`): Tenants mapped to GHL Locations, with member roles (owner/admin/moderator/member)
+2. **Social Engine** (`channels`, `posts`, `comments`, `likes`): Forum-style discussions with GHL tag-based channel access control
+3. **LMS Engine** (`courses`, `modules`, `lessons`, `progress`): Course delivery with video hosting and progress tracking
+
+**Critical**: Members belong to communities via `userId` + `communityId`. Access control uses `memberProcedure` and role checks.
 
 ## Critical Build & Dev Commands
 
@@ -65,10 +76,35 @@ All API communication is **type-safe through tRPC**:
 
 **Better Auth** handles OAuth and sessions across all platforms:
 
-- Initialized in `packages/auth/src/index.ts` with Discord OAuth + Expo support
-- **Discord redirects**: Production URL in OAuth config must match deployment domain
+- Initialized in `packages/auth/src/index.ts` with Expo support
 - **Server-side**: Next.js calls `auth.api.getSession()` in RSC context via headers
 - **Client-side**: React components use `useTRPC` for session queries
+
+## Custom tRPC Procedures & Authorization
+
+Beyond standard tRPC patterns, this codebase has **custom procedures** in `packages/api/src/trpc.ts`:
+
+- `publicProcedure`: No auth required (base)
+- `protectedProcedure`: Requires authentication (checks `ctx.session.user`)
+- `memberProcedure`: Requires auth + membership in community (requires `input.communityId`, adds `ctx.member`)
+- `adminProcedure`: Extends `memberProcedure`, requires owner/admin role
+- `moderatorProcedure`: Extends `memberProcedure`, requires moderator/admin/owner role
+- `ownerProcedure`: Extends `memberProcedure`, requires owner role
+
+**Pattern**: Multi-tenant endpoints MUST use `memberProcedure` or higher. Input schemas extend `z.object({ communityId: z.string().uuid() })`.
+
+## GoHighLevel (GHL) Integration
+
+**GHL is the identity & CRM backbone**:
+
+- Communities map to GHL Locations via `ghlLocationId`
+- Members map to GHL Contacts via `ghlContactId`
+- Users can have a global `ghlGlobalUserId` (SSO)
+- Channel access controlled by `ghlTags` array on members (synced via webhooks)
+- OAuth flow: `ghlRouter.exchangeCode` stores tokens in `communities` table (encrypt `ghlAccessToken` in app logic)
+- Webhook handler: `ghlRouter.syncContact` creates/updates users and members
+
+**Integration files**: `packages/api/src/router/ghl.ts`, `packages/db/src/schema.ts` (communities/members tables)
 
 ## Environment & Validation
 
@@ -103,9 +139,14 @@ All API communication is **type-safe through tRPC**:
 - **Biome** (`biome.json`): Single tool for linting + formatting (replaces ESLint + Prettier)
   - Run `pnpm check` to lint (with task dependencies)
   - Run `pnpm format` to format all files
-  - Configured with recommended rules + custom overrides (e.g., `noDefaultExport` off for config files)
+  - Configured with recommended rules + custom overrides:
+    - `noExplicitAny`: "warn" (use `biome-ignore` comments when tRPC types are complex)
+    - `noUnusedVariables`: "warn"
+    - Formatting: 80-char line width, double quotes, trailing commas, semicolons
+  - **Suppress warnings**: `// biome-ignore lint/suspicious/noExplicitAny: <reason>`
 - **TypeScript**: Extends from `tooling/typescript/base.json`
 - **Tailwind**: Shared theme in `tooling/tailwind/theme.css`
+- **Sherif**: Runs on `postinstall` to check workspace dependency consistency (`pnpm lint:ws`)
 
 ## Key Integration Points
 
@@ -125,7 +166,13 @@ All API communication is **type-safe through tRPC**:
    - Export from `packages/ui/src/index.ts`
    - Use in apps with `import { Component } from "@ogm/ui"`
 
-4. **Cross-app auth**: All apps use same Better Auth instance—session state is shared
+4. **File uploads/storage**:
+   - Use `@ogm/storage` package (wraps Supabase Storage)
+   - Server-side: `createStorageClient(url, serviceRoleKey)`
+   - Client-side: `createPublicStorageClient(url, anonKey)`
+   - Env vars: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+5. **Cross-app auth**: All apps use same Better Auth instance—session state is shared
 
 ## Important Constraints
 
