@@ -146,6 +146,7 @@ export const CreatePostSchema = createInsertSchema(posts, {
   mediaType: z.enum(["image", "video", "audio"]).optional(),
 }).omit({
   id: true,
+  authorId: true,
   commentCount: true,
   likeCount: true,
   createdAt: true,
@@ -171,6 +172,7 @@ export const CreateCommentSchema = createInsertSchema(comments, {
   voiceNoteUrl: z.url().optional(),
 }).omit({
   id: true,
+  authorId: true,
   createdAt: true,
 });
 

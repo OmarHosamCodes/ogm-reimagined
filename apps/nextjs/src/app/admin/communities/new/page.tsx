@@ -24,7 +24,7 @@ export default function NewCommunityPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createCommunity.mutate({ name, slug, description });
+    createCommunity.mutate({ name, slug, ghlLocationId: "" });
   };
 
   // Auto-generate slug from name

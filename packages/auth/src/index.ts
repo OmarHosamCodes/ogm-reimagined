@@ -1,9 +1,8 @@
 import { expo } from "@better-auth/expo";
+import { db } from "@ogm/db/client";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-
-import { db } from "@ogm/db/client";
 
 export function initAuth<
   TExtraPlugins extends BetterAuthPlugin[] = [],
@@ -29,7 +28,10 @@ export function initAuth<
       },
     },
     plugins: [expo(), ...(options.extraPlugins ?? [])],
-    socialProviders: {},
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: false, // Disable for development
+    },
     trustedOrigins: ["expo://"],
     onAPIError: {
       onError(error, ctx) {

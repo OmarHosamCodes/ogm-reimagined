@@ -12,6 +12,7 @@ import {
   Input,
   Label,
 } from "@ogm/ui";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTRPC } from "~/trpc/react";
 
@@ -21,15 +22,17 @@ export function JoinCommunityDialog() {
   const [isLoading, setIsLoading] = useState(false);
 
   const trpc = useTRPC();
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
-  const joinMutation = trpc.member.join.useMutation({
-    onSuccess: () => {
-      utils.auth.getUserCommunities.invalidate();
-      setOpen(false);
-      setSlug("");
-    },
-  });
+  const joinMutation = useMutation(
+    trpc.member.join.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.auth.getUserCommunities.queryFilter());
+        setOpen(false);
+        setSlug("");
+      },
+    }),
+  );
 
   const handleJoin = async () => {
     if (!slug) return;
@@ -37,7 +40,9 @@ export function JoinCommunityDialog() {
     setIsLoading(true);
     try {
       // First, get the community by slug
-      const community = await trpc.community.getBySlug.query({ slug });
+      const community = await queryClient.fetchQuery(
+        trpc.community.getBySlug.queryOptions({ slug }),
+      );
 
       // Then join it
       await joinMutation.mutateAsync({

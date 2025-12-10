@@ -9,9 +9,7 @@ interface Community {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
   logoUrl: string | null;
-  bannerUrl: string | null;
 }
 
 interface CommunityEditFormProps {
@@ -23,9 +21,7 @@ export function CommunityEditForm({ community }: CommunityEditFormProps) {
   const queryClient = useQueryClient();
 
   const [name, setName] = useState(community.name);
-  const [description, setDescription] = useState(community.description ?? "");
   const [logoUrl, setLogoUrl] = useState(community.logoUrl ?? "");
-  const [bannerUrl, setBannerUrl] = useState(community.bannerUrl ?? "");
 
   const updateCommunity = useMutation(
     trpc.community.update.mutationOptions({
@@ -40,9 +36,7 @@ export function CommunityEditForm({ community }: CommunityEditFormProps) {
     updateCommunity.mutate({
       id: community.id,
       name,
-      description: description || undefined,
       logoUrl: logoUrl || undefined,
-      bannerUrl: bannerUrl || undefined,
     });
   };
 
@@ -67,32 +61,11 @@ export function CommunityEditForm({ community }: CommunityEditFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="logoUrl">Logo URL</Label>
         <Input
           id="logoUrl"
           value={logoUrl}
           onChange={(e) => setLogoUrl(e.target.value)}
-          placeholder="https://..."
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="bannerUrl">Banner URL</Label>
-        <Input
-          id="bannerUrl"
-          value={bannerUrl}
-          onChange={(e) => setBannerUrl(e.target.value)}
           placeholder="https://..."
         />
       </div>

@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 
 import {
-  createStorageClient,
-  generateFilePath,
-  uploadFile,
+    createStorageClient,
+    generateFilePath,
+    uploadFile,
 } from "@ogm/storage";
 
-import { auth } from "~/auth/server";
+import { getSession } from "~/auth/server";
 import { env } from "~/env";
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -72,9 +72,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};

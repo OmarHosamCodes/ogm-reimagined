@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 
 import {
-  createSignedUploadUrl,
-  createStorageClient,
-  generateFilePath,
+    createSignedUploadUrl,
+    createStorageClient,
+    generateFilePath,
 } from "@ogm/storage";
 
-import { auth } from "~/auth/server";
+import { getSession } from "~/auth/server";
 import { env } from "~/env";
 
 const RequestSchema = z.object({
@@ -17,7 +17,7 @@ const RequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid request", details: error.errors },
+        { error: "Invalid request", details: error.issues },
         { status: 400 },
       );
     }

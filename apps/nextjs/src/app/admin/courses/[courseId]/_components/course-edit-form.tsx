@@ -11,7 +11,7 @@ interface Course {
   description: string | null;
   thumbnailUrl: string | null;
   published: boolean | null;
-  unlockTagIds: string[] | null;
+  unlockGhlTag: string | null;
 }
 
 interface CourseEditFormProps {
@@ -25,9 +25,7 @@ export function CourseEditForm({ course }: CourseEditFormProps) {
   const [title, setTitle] = useState(course.title);
   const [description, setDescription] = useState(course.description ?? "");
   const [thumbnailUrl, setThumbnailUrl] = useState(course.thumbnailUrl ?? "");
-  const [unlockTagIds, setUnlockTagIds] = useState(
-    course.unlockTagIds?.join(", ") ?? "",
-  );
+  const [unlockTagIds, setUnlockTagIds] = useState(course.unlockGhlTag ?? "");
   const [published, setPublished] = useState(course.published ?? false);
 
   const updateCourse = useMutation(
@@ -45,10 +43,7 @@ export function CourseEditForm({ course }: CourseEditFormProps) {
       title,
       description: description || undefined,
       thumbnailUrl: thumbnailUrl || undefined,
-      unlockTagIds: unlockTagIds
-        ? unlockTagIds.split(",").map((id) => id.trim())
-        : undefined,
-      published,
+      unlockGhlTag: unlockTagIds || undefined,
     });
   };
 

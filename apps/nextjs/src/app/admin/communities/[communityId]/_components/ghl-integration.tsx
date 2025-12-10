@@ -27,7 +27,7 @@ export function GhlIntegration({ community }: GhlIntegrationProps) {
     new Date(community.ghlTokenExpiresAt) < new Date();
 
   const refreshToken = useMutation(
-    trpc.community.refreshGhlToken.mutationOptions({
+    trpc.community.refreshGhlTokens.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries();
       },

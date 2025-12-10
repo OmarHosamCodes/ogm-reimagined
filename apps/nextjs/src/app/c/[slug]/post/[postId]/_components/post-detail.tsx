@@ -3,26 +3,27 @@
 import { Button } from "@ogm/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Heart,
-  MessageCircle,
-  MoreHorizontal,
-  Pin,
-  Share2,
+    Heart,
+    MessageCircle,
+    MoreHorizontal,
+    Pin,
+    Share2,
 } from "lucide-react";
 import { useState } from "react";
 import { useTRPC } from "~/trpc/react";
 
 interface Post {
   id: string;
-  content: string;
-  imageUrls: string[] | null;
+  title: string;
+  content: string | null;
+  mediaUrl: string | null;
+  mediaType: string | null;
   isPinned: boolean | null;
-  createdAt: Date;
+  createdAt: Date | null;
   author: {
     user: {
       id: string;
       name: string | null;
-      image: string | null;
     } | null;
   } | null;
   channel: {
@@ -75,24 +76,16 @@ export function PostDetail({ post }: PostDetailProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-            {post.author?.user?.image ? (
-              <img
-                src={post.author.user.image}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="text-lg font-semibold text-muted-foreground">
-                {post.author?.user?.name?.[0] ?? "?"}
-              </span>
-            )}
+            <span className="text-sm font-semibold text-muted-foreground">
+              {post.author?.user?.name?.[0] ?? "?"}
+            </span>
           </div>
           <div>
             <h3 className="font-semibold">
               {post.author?.user?.name ?? "Anonymous"}
             </h3>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <time>{new Date(post.createdAt).toLocaleDateString()}</time>
+              <time>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ""}</time>
               {post.channel && (
                 <>
                   <span>•</span>
@@ -113,27 +106,28 @@ export function PostDetail({ post }: PostDetailProps) {
         <p className="text-lg whitespace-pre-wrap">{post.content}</p>
       </div>
 
-      {/* Images */}
-      {post.imageUrls && post.imageUrls.length > 0 && (
-        <div className="mt-4 grid gap-2">
-          {post.imageUrls.length === 1 ? (
+      {/* Media */}
+      {post.mediaUrl && (
+        <div className="mt-4">
+          {post.mediaType?.startsWith("image") ? (
             <img
-              src={post.imageUrls[0]}
+              src={post.mediaUrl}
               alt=""
               className="w-full rounded-lg object-cover max-h-96"
             />
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              {post.imageUrls.map((url, index) => (
-                <img
-                  key={index}
-                  src={url}
-                  alt=""
-                  className="w-full h-48 rounded-lg object-cover"
-                />
-              ))}
-            </div>
-          )}
+          ) : post.mediaType?.startsWith("video") ? (
+            <video
+              src={post.mediaUrl}
+              controls
+              className="w-full rounded-lg max-h-96"
+            />
+          ) : post.mediaType?.startsWith("audio") ? (
+            <audio
+              src={post.mediaUrl}
+              controls
+              className="w-full"
+            />
+          ) : null}
         </div>
       )}
 

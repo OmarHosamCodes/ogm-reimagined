@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 /**
- * Middleware for authentication and route protection
+ * Proxy for authentication and route protection
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication

@@ -122,7 +122,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
                         {comment.author?.user?.name ?? "Anonymous"}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(comment.createdAt).toLocaleDateString()}
+                        {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : ""}
                       </span>
                     </div>
                     <p className="mt-1 text-sm">{comment.content}</p>
@@ -187,7 +187,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
                           {reply.author?.user?.name ?? "Anonymous"}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(reply.createdAt).toLocaleDateString()}
+                          {reply.createdAt ? new Date(reply.createdAt).toLocaleDateString() : ""}
                         </span>
                       </div>
                       <p className="mt-1 text-sm">{reply.content}</p>

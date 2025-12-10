@@ -1,23 +1,22 @@
 "use client";
 
 import type { RouterOutputs } from "@ogm/api";
-import { CreatePostSchema } from "@ogm/db/schema";
 import {
-  Button,
-  cn,
-  Field,
-  FieldContent,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  toast,
+    Button,
+    cn,
+    Field,
+    FieldContent,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+    Input,
+    toast,
 } from "@ogm/ui";
 import { useForm } from "@tanstack/react-form";
 import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
+    useMutation,
+    useQueryClient,
+    useSuspenseQuery,
 } from "@tanstack/react-query";
 
 import { useTRPC } from "~/trpc/react";
@@ -47,10 +46,12 @@ export function CreatePostForm() {
       content: "",
       title: "",
     },
-    validators: {
-      onSubmit: CreatePostSchema,
+    onSubmit: (data) => {
+      // This component is incomplete and needs communityId, channelId, and authorId
+      // to actually work. For now, just log the submission.
+      console.warn("CreatePostForm submission blocked - missing required context");
+      console.log(data.value);
     },
-    onSubmit: (data) => createPost.mutate(data.value),
   });
 
   return (
@@ -173,7 +174,7 @@ export function PostCard(props: {
         <Button
           variant="ghost"
           className="text-primary cursor-pointer text-sm font-bold uppercase hover:bg-transparent hover:text-white"
-          onClick={() => deletePost.mutate(props.post.id)}
+          onClick={() => deletePost.mutate({ id: props.post.id })}
         >
           Delete
         </Button>

@@ -41,7 +41,6 @@ export function PostComposer({ channelId, communityId }: PostComposerProps) {
       content: content.trim() || undefined,
       channelId,
       communityId,
-      isPinned: false,
     });
   };
 

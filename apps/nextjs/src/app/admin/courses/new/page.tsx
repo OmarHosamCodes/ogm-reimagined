@@ -13,17 +13,20 @@ export default function NewCoursePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [communityId, setCommunityId] = useState("");
-  const [unlockTagIds, setUnlockTagIds] = useState("");
+  const [unlockGhlTag, setUnlockGhlTag] = useState("");
+  const [unlockLevel, setUnlockLevel] = useState<number | undefined>();
 
   // Get list of communities
   const { data: communities } = useSuspenseQuery(
-    trpc.community.listMine.queryOptions(),
+    trpc.auth.getUserCommunities.queryOptions(),
   );
 
   const createCourse = useMutation(
     trpc.course.create.mutationOptions({
       onSuccess: (course) => {
-        router.push(`/admin/courses/${course.id}`);
+        if (course) {
+          router.push(`/admin/courses/${course.id}`);
+        }
       },
     }),
   );
@@ -34,9 +37,8 @@ export default function NewCoursePage() {
       communityId,
       title,
       description: description || undefined,
-      unlockTagIds: unlockTagIds
-        ? unlockTagIds.split(",").map((id) => id.trim())
-        : undefined,
+      unlockGhlTag: unlockGhlTag || undefined,
+      unlockLevel: unlockLevel || undefined,
     });
   };
 
@@ -92,16 +94,32 @@ export default function NewCoursePage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="unlockTagIds">Unlock Tag IDs (optional)</Label>
+          <Label htmlFor="unlockGhlTag">Unlock GHL Tag (optional)</Label>
           <Input
-            id="unlockTagIds"
-            value={unlockTagIds}
-            onChange={(e) => setUnlockTagIds(e.target.value)}
-            placeholder="tag-id-1, tag-id-2"
+            id="unlockGhlTag"
+            value={unlockGhlTag}
+            onChange={(e) => setUnlockGhlTag(e.target.value)}
+            placeholder="tag-name"
           />
           <p className="text-sm text-muted-foreground">
-            Comma-separated GHL tag IDs. Users with these tags will have access
-            to the course.
+            GHL tag name. Users with this tag will have access to the course.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="unlockLevel">Unlock Level (optional)</Label>
+          <Input
+            id="unlockLevel"
+            type="number"
+            value={unlockLevel ?? ""}
+            onChange={(e) =>
+              setUnlockLevel(e.target.value ? parseInt(e.target.value) : undefined)
+            }
+            placeholder="1"
+            min="1"
+          />
+          <p className="text-sm text-muted-foreground">
+            Minimum member level required to access this course.
           </p>
         </div>
 
